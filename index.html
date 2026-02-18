@@ -393,7 +393,7 @@
 
         // Multimodal classes on board
         const multimodalClasses = [];
-        if (hasApap) multimodalClasses.push('APAP');
+        if (hasApap) multimodalClasses.push('Acetaminophen');
         if (hasNSAID) multimodalClasses.push('NSAID');
         if (hasGabapentinoid) multimodalClasses.push('Gabapentinoid');
         if (hasKetaminePO || hasKetamineInfusion) multimodalClasses.push('Ketamine');
@@ -430,7 +430,8 @@
         const oudText = hasOUD && activeMOUDs.length === 0 ? ', h/o OUD (no current MOUD)' : '';
         const podText = postOpDay ? ` POD#${postOpDay}` : '';
         const condText = primaryCondition || 'acute pain';
-        output.oneLiner = `${toleranceText}${moudText}${oudText} patient with ${condText}${podText}. ${painMechanism} pain NRS ${painAtRest}→${painWithActivity} (rest→activity). MEDD ${medd} OME. Control: ${controlStatus.toLowerCase()}.`;
+        const patternText = painPattern !== 'Constant' ? `, ${painPattern.toLowerCase()}-predominant` : '';
+        output.oneLiner = `${toleranceText}${moudText}${oudText} patient with ${condText}${podText}. ${painMechanism} pain${patternText}, NRS ${painAtRest}→${painWithActivity} (rest→activity). MEDD ${medd} OME. Control: ${controlStatus.toLowerCase()}.`;
 
         // === SAFETY ALERTS ===
         // High MEDD
@@ -479,8 +480,8 @@
         if (ivAnalgesicOpioids.length > 0 && toleratingPO) {
           ivAnalgesicOpioids.forEach(iv => {
             const targets = hasRenal
-              ? [{ drug: 'Hydromorphone PO', label: 'HM PO' }, { drug: 'Oxycodone IR', label: 'Oxy IR' }]
-              : [{ drug: 'Oxycodone IR', label: 'Oxy IR' }, { drug: 'Morphine IR', label: 'Morphine IR' }, { drug: 'Hydromorphone PO', label: 'HM PO' }];
+              ? [{ drug: 'Oxycodone IR', label: 'Oxycodone IR' }, { drug: 'Hydromorphone PO', label: 'Hydromorphone PO' }]
+              : [{ drug: 'Oxycodone IR', label: 'Oxycodone IR' }, { drug: 'Hydromorphone PO', label: 'Hydromorphone PO' }, { drug: 'Morphine IR', label: 'Morphine IR' }];
 
             const conversions = targets.map(t => {
               const conv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, t.drug, 0.25);
@@ -494,7 +495,7 @@
               output.actionItems.push({
                 text: `IV→PO: Convert ${iv.drug} ${iv.dose}${iv.unit} ${iv.frequency} → ${options} (same frequency)`,
                 tag: 'CONVERT',
-                sub: hasRenal ? 'Morphine avoided (renal). HM/oxy preferred.' : null,
+                sub: hasRenal ? 'Morphine avoided (renal impairment). Oxycodone/hydromorphone preferred.' : null,
               });
               conversions.forEach(c => {
                 output.conversionMath.push({ label: `${iv.drug} → ${c.label}`, math: c.math });
@@ -512,20 +513,20 @@
 
           let btOptions;
           if (hasRenal) {
-            btOptions = `HM ${btHMIV}mg IV Q3H PRN | Oxy IR ${btOxy}mg PO Q4H PRN`;
+            btOptions = `Oxycodone IR ${btOxy}mg PO Q4H PRN | Hydromorphone ${btHMIV}mg IV Q3H PRN`;
             output.actionItems.push({
               text: `Breakthrough (15% of MEDD = ${btOME} OME): ${btOptions}`,
               tag: 'BT DOSE',
               sub: 'Morphine avoided (renal impairment).',
             });
           } else {
-            btOptions = `Morphine ${btMorphIV}mg IV Q3H PRN | HM ${btHMIV}mg IV Q3H PRN | Oxy IR ${btOxy}mg PO Q4H PRN`;
+            btOptions = `Oxycodone IR ${btOxy}mg PO Q4H PRN | Hydromorphone ${btHMIV}mg IV Q3H PRN | Morphine ${btMorphIV}mg IV Q3H PRN`;
             output.actionItems.push({
               text: `Breakthrough (15% of MEDD = ${btOME} OME): ${btOptions}`,
               tag: 'BT DOSE',
             });
           }
-          output.conversionMath.push({ label: 'Breakthrough calculation', math: `MEDD ${medd} × 15% = ${btOME} OME → Morphine IV: ${btOME}/3 = ${btMorphIV}mg | HM IV: ${btOME}/20 = ${btHMIV}mg | Oxy IR: ${btOME}/1.5 = ${btOxy}mg` });
+          output.conversionMath.push({ label: 'Breakthrough calculation', math: `MEDD ${medd} × 15% = ${btOME} OME → Oxycodone IR: ${btOME}/1.5 = ${btOxy}mg | Hydromorphone IV: ${btOME}/20 = ${btHMIV}mg | Morphine IV: ${btOME}/3 = ${btMorphIV}mg` });
         }
 
         // Opioid-naive starting doses
@@ -533,14 +534,15 @@
           const doseAdj = isElderly ? ' (reduce 50% for age ≥65)' : '';
           if (toleratingPO) {
             output.actionItems.push({
-              text: `Start: Oxycodone IR 5mg PO Q4H PRN${doseAdj} OR Morphine IR 5-10mg PO Q4H PRN${doseAdj}${hasRenal ? ' (prefer oxy if renal)' : ''}`,
+              text: `Start: Oxycodone IR 5mg PO Q4H PRN${doseAdj}${!hasRenal ? ' OR Morphine IR 5-10mg PO Q4H PRN' + doseAdj : ''}`,
               tag: 'START',
+              sub: hasRenal ? 'Morphine avoided (renal). Oxycodone preferred.' : null,
             });
           }
           output.actionItems.push({
-            text: `Start: Morphine 2-4mg IV Q4H PRN${doseAdj} OR HM 0.2-0.4mg IV Q3H PRN${doseAdj}${hasRenal ? ' (prefer HM if renal)' : ''}`,
+            text: `Start: Hydromorphone 0.2-0.4mg IV Q3H PRN${doseAdj}${!hasRenal ? ' OR Morphine 2-4mg IV Q4H PRN' + doseAdj : ''}`,
             tag: 'START',
-            sub: 'Reassess in 15-30 min (IV) or 60 min (PO). Titrate to NRS ≤4.',
+            sub: `Reassess in 15-30 min (IV) or 60 min (PO). Titrate to NRS ≤4.${hasRenal ? ' Hydromorphone preferred over morphine (renal).' : ''}`,
           });
         }
 
@@ -550,6 +552,20 @@
             text: `Only PRN opioids on board (MEDD ${medd}). Convert to scheduled + PRN: schedule ~60-70% of daily requirement around the clock, keep 15% as breakthrough.`,
             tag: 'SCHEDULE',
             sub: 'Scheduled dosing provides more consistent analgesia, reduces pain crises, and is better for discharge planning.',
+          });
+        }
+
+        // Pain pattern-specific guidance
+        if (painPattern === 'Movement' && !hasBlock) {
+          output.suggestions.push({
+            text: `Movement-evoked pain pattern — optimize pre-PT/mobilization analgesia. Timed scheduled doses 30-60 min before activity. Consider regional block for targeted coverage.`,
+            tag: 'PATTERN',
+          });
+        }
+        if (painPattern === 'Constant' && hasOnlyPRN && opioids.length > 0) {
+          output.actionItems.push({
+            text: `Constant pain pattern with PRN-only regimen. Scheduled dosing better matches this pattern. Convert to around-the-clock + PRN.`,
+            tag: 'PATTERN',
           });
         }
 
@@ -577,19 +593,36 @@
           output.actionItems.push({ text: `Add gabapentin 300mg PO TID${renalNote} or pregabalin 75mg PO BID${renalNote}`, tag: 'MULTIMODAL', sub: `${hasNeuropathic ? 'Neuropathic component identified. ' : ''}Gabapentinoids opioid-sparing; titrate over days.` });
         }
 
-        // Ketamine PO
-        if (!hasKetaminePO && (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No'))) {
+        // Ketamine PO — low threshold, common institutional tool
+        const ketamineIndicated = !hasKetaminePO && toleratingPO && (
+          toleranceStatus === 'tolerant' ||
+          medd > 50 ||
+          controlStatus === 'No' ||
+          consultTypes.includes('Complex/refractory') ||
+          consultTypes.includes('Acute-on-chronic') ||
+          (hasNeuropathic && controlStatus !== 'Yes')
+        );
+        if (ketamineIndicated) {
           output.actionItems.push({
-            text: `Add ketamine PO 10-25mg Q6H (titrate to 50mg Q6H)`,
+            text: `Add ketamine PO 10-25mg Q6H (titrate to 50mg Q6H as tolerated)`,
             tag: 'KETAMINE',
-            sub: 'NMDA antagonist. Opioid-sparing, prevents OIH. First-line adjuvant for refractory pain in opioid-tolerant patients. PO preferred over IV for ease of transition to discharge.',
+            sub: 'NMDA antagonist. Opioid-sparing, prevents OIH. First-line adjuvant at this institution. PO preferred — easy to continue on discharge.',
+          });
+        } else if (!hasKetaminePO && !hasKetamineInfusion && toleratingPO && controlStatus === 'Partial' && opioids.length > 0) {
+          output.suggestions.push({
+            text: `Consider ketamine PO 10mg Q6H — low-dose NMDA antagonism, opioid-sparing, can reduce tolerance and OIH`,
+            tag: 'KETAMINE',
           });
         }
-        if (!hasKetamineInfusion && !hasKetaminePO && (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No')) && !toleratingPO) {
+        // Ketamine IV — only when not tolerating PO
+        if (!hasKetamineInfusion && !hasKetaminePO && !toleratingPO && (
+          toleranceStatus === 'tolerant' || medd > 50 || controlStatus === 'No' ||
+          consultTypes.includes('Complex/refractory')
+        )) {
           output.actionItems.push({
             text: `Start ketamine infusion 0.1-0.3 mg/kg/hr (sub-anesthetic)${weight ? ` → ${Math.round(parseFloat(weight) * 0.1)}-${Math.round(parseFloat(weight) * 0.3)} mg/hr` : ''}`,
             tag: 'KETAMINE',
-            sub: 'Not tolerating PO; IV ketamine appropriate. Transition to PO when able. Caution: uncontrolled HTN, psychosis, elevated ICP.',
+            sub: 'Not tolerating PO; IV ketamine bridging appropriate. Transition to PO ketamine 10-50mg Q6H when able.',
           });
         }
 
@@ -608,9 +641,9 @@
           }
         }
 
-        // Lidocaine infusion
-        if ((hasNeuropathic || painMechanism.includes('Mixed')) && !infusions['Lidocaine IV infusion'] && !hasBlock) {
-          output.suggestions.push({ text: `Consider IV lidocaine infusion 1-1.5 mg/kg/hr${weight ? ` (${Math.round(parseFloat(weight) * 1)}-${Math.round(parseFloat(weight) * 1.5)} mg/hr)` : ''} for neuropathic component`, tag: 'ADJUVANT' });
+        // Lidocaine infusion — lower priority; suggest only for refractory neuropathic when other adjuvants insufficient
+        if (hasNeuropathic && !infusions['Lidocaine IV infusion'] && !hasBlock && controlStatus === 'No' && !hasKetamineInfusion) {
+          output.suggestions.push({ text: `Consider IV lidocaine infusion 1-1.5 mg/kg/hr${weight ? ` (${Math.round(parseFloat(weight) * 1)}-${Math.round(parseFloat(weight) * 1.5)} mg/hr)` : ''} for refractory neuropathic pain (requires cardiac monitoring)`, tag: 'ADJUVANT' });
         }
 
         // Dexmedetomidine
@@ -1248,13 +1281,13 @@
           <div className="p-3 max-w-7xl mx-auto">
             {wide ? (
               <div className="grid grid-cols-2 gap-3" style={{ minHeight: 'calc(100vh - 160px)' }}>
-                <div className="bg-white rounded-lg shadow overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}><InputTab /></div>
-                <div className="bg-white rounded-lg shadow p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}><RecommendationsTab /></div>
+                <div className="bg-white rounded-lg shadow overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}>{InputTab()}</div>
+                <div className="bg-white rounded-lg shadow p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}>{RecommendationsTab()}</div>
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow overflow-hidden mb-20">
-                <div className={activeTab === 'input' ? 'block' : 'hidden'}><InputTab /></div>
-                <div className={activeTab === 'recs' ? 'block p-4' : 'hidden'}><RecommendationsTab /></div>
+                <div className={activeTab === 'input' ? 'block' : 'hidden'}>{InputTab()}</div>
+                <div className={activeTab === 'recs' ? 'block p-4' : 'hidden'}>{RecommendationsTab()}</div>
               </div>
             )}
           </div>
