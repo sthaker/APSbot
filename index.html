@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acute Pain Service DSS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="password-gate" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1e293b;font-family:system-ui,sans-serif;">
+    <div style="background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.3);text-align:center;max-width:320px;width:90%;">
+      <h2 style="margin:0 0 0.5rem;color:#1e293b;font-size:1.25rem;">Acute Pain Service DSS</h2>
+      <p style="margin:0 0 1.5rem;color:#64748b;font-size:0.875rem;">Educational Tool — Enter access code</p>
+      <input id="pw-input" type="password" placeholder="Access code" autofocus
+        style="width:100%;padding:0.75rem;border:2px solid #cbd5e1;border-radius:8px;font-size:1rem;box-sizing:border-box;margin-bottom:0.75rem;text-align:center;"
+        onkeydown="if(event.key==='Enter')document.getElementById('pw-btn').click()">
+      <button id="pw-btn" onclick="if(document.getElementById('pw-input').value==='aps'){document.getElementById('password-gate').style.display='none';document.getElementById('app-container').style.display='block';}else{document.getElementById('pw-input').style.borderColor='#ef4444';document.getElementById('pw-input').placeholder='Incorrect — try again';document.getElementById('pw-input').value='';}"
+        style="width:100%;padding:0.75rem;background:#2563eb;color:white;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;">
+        Enter
+      </button>
+    </div>
+  </div>
+  <div id="app-container" style="display:none;">
+    <div id="root"></div>
+  </div>
+
+  <script type="text/babel">
+    // SVG Icon Components
+    const ChevronDown = ({ size = 24, className = '' }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    );
+
+    const ChevronUp = ({ size = 24, className = '' }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    );
+
+    const X = ({ size = 24, className = '' }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    );
+
+    const Copy = ({ size = 24, className = '' }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+      </svg>
+    );
+
+    const AlertCircle = ({ size = 24, className = '' }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    );
+
+    const AlertTriangle = ({ size = 24, className = '' }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.04h16.94a2 2 0 0 0 1.71-3.04l-8.47-14.14a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    );
+
+    const CheckCircle = ({ size = 24, className = '' }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    );
+
+    // MEDD Conversion Factors
+    const MEDD_FACTORS = {
+      'Morphine PO': 1,
+      'Morphine IV': 3,
+      'Oxycodone PO': 1.5,
+      'Hydromorphone PO': 4,
+      'Hydromorphone IV': 20,
+      'Hydrocodone/APAP': 1,
+      'Fentanyl IV': 0.3,
+      'Fentanyl Patch': 2.4,
+      'Ketamine PO': 0,
+      'Methadone PO': null,
+      'Tramadol PO': 0.1,
+      'Codeine PO': 0.15,
+      'Oxymorphone PO': 3,
+      'Tapentadol PO': 0.4,
+      'Ketorolac IV': 0,
+      'Ketamine IV': 0,
+      'Buprenorphine SL': null,
+      'Buprenorphine Patch': null,
+      'Buprenorphine Injection': null,
+      'Suzetrigine': 0,
+    };
+
+    const frequencyToDaily = (frequency) => {
+      const map = {
+        PRN: 0.5,
+        'Q2H PRN': 6,
+        Q2H: 12,
+        'Q3H PRN': 4,
+        Q3H: 8,
+        'Q4H PRN': 3,
+        Q4H: 6,
+        Q6H: 4,
+        Q8H: 3,
+        Q12H: 2,
+        Q24H: 1,
+        Q72H: 0.33,
+        Continuous: 24,
+      };
+      return map[frequency] || 1;
+    };
+
+    const getMethadoneMEDDFactor = (dailyDose) => {
+      if (dailyDose <= 20) return 4;
+      if (dailyDose <= 40) return 8;
+      if (dailyDose <= 60) return 10;
+      return 12;
+    };
+
+    const calculateMEDD = (opioids, pca) => {
+      let totalMEDD = 0;
+
+      opioids.forEach((med) => {
+        const { drug, dose, frequency, unit } = med;
+
+        if (!dose) return;
+
+        let factor = MEDD_FACTORS[drug];
+        let baseDose = parseFloat(dose);
+
+        if (drug === 'Methadone PO') {
+          const dailyDose = baseDose * frequencyToDaily(frequency);
+          factor = getMethadoneMEDDFactor(dailyDose);
+          totalMEDD += baseDose * factor * frequencyToDaily(frequency);
+        } else if (drug === 'Fentanyl Patch') {
+          totalMEDD += baseDose * 2.4;
+        } else if (drug === 'Fentanyl IV') {
+          totalMEDD += baseDose * factor * frequencyToDaily(frequency);
+        } else if (!['Buprenorphine SL', 'Buprenorphine Patch', 'Buprenorphine Injection', 'Ketorolac IV', 'Ketamine IV', 'Ketamine PO', 'Suzetrigine'].includes(drug)) {
+          if (factor) {
+            totalMEDD += baseDose * factor * frequencyToDaily(frequency);
+          }
+        }
+      });
+
+      // PCA contribution
+      if (pca.active && pca.drug) {
+        const demandDose = parseFloat(pca.demandDose) || 0;
+        const lockout = parseFloat(pca.lockout) || 6;
+        const basalRate = parseFloat(pca.basalRate) || 0;
+
+        // Estimate demand uses (30% of possible demands)
+        const estimatedDailyDemand = (demandDose * (60 / lockout) * 24 * 0.3);
+        const estimatedDailyBasal = basalRate * 24;
+        const totalDailyDose = estimatedDailyDemand + estimatedDailyBasal;
+
+        const pcaFactor = MEDD_FACTORS[pca.drug] || 1;
+        if (pcaFactor) {
+          totalMEDD += totalDailyDose * pcaFactor;
+        }
+      }
+
+      return Math.round(totalMEDD);
+    };
+
+    const calculateEquianalgesicDose = (sourceDrug, sourceDose, sourceFrequency, targetDrug, crossToleranceReduction = 0.25) => {
+      const sourceMEDD = sourceDose * (MEDD_FACTORS[sourceDrug] || 1) * frequencyToDaily(sourceFrequency);
+      const targetFactor = MEDD_FACTORS[targetDrug] || 1;
+
+      if (!targetFactor || targetFactor === 0) return null;
+
+      const equianalgesic = sourceMEDD / targetFactor;
+      const adjusted = equianalgesic * (1 - crossToleranceReduction);
+
+      return {
+        equianalgesic: Math.round(equianalgesic * 10) / 10,
+        adjusted: Math.round(adjusted * 10) / 10,
+      };
+    };
+
+    // Main App Component
+    const AcutePainDSS = () => {
+      // Context
+      const [consultTypes, setConsultTypes] = React.useState([]);
+      const [primaryCondition, setPrimaryCondition] = React.useState('');
+      const [postOpDay, setPostOpDay] = React.useState('');
+
+      // Pain Assessment
+      const [painAtRest, setPainAtRest] = React.useState(5);
+      const [painWithActivity, setPainWithActivity] = React.useState(5);
+      const [painQuality, setPainQuality] = React.useState([]);
+      const [controlStatus, setControlStatus] = React.useState('Partial');
+      const [painPattern, setPainPattern] = React.useState('Constant');
+
+      // Medications
+      const [opioids, setOpioids] = React.useState([]);
+      const [nonOpioids, setNonOpioids] = React.useState({});
+      const [infusions, setInfusions] = React.useState({});
+      const [pca, setPCA] = React.useState({ active: false, drug: 'Hydromorphone', demandDose: '', lockout: '6', basalRate: '' });
+
+      // Selected opioid for inline form
+      const [selectedOpioidButton, setSelectedOpioidButton] = React.useState(null);
+      const [opioidFormDose, setOpioidFormDose] = React.useState('');
+      const [opioidFormFreq, setOpioidFormFreq] = React.useState('Q4H');
+      const [opioidFormUnit, setOpioidFormUnit] = React.useState('mg');
+
+      // Patient Factors - RESTRUCTURED
+      const [toleranceStatus, setToleranceStatus] = React.useState('naive');
+      const [homeOME, setHomeOME] = React.useState('');
+      const [hasOUD, setHasOUD] = React.useState(false);
+      const [moud, setMoud] = React.useState({});
+      const [comorbidities, setComorbidities] = React.useState([]);
+      const [sedationStatus, setSedationStatus] = React.useState('Alert');
+      const [toleratingPO, setToleatingPO] = React.useState(true);
+      const [onMonitoring, setOnMonitoring] = React.useState(false);
+      const [weight, setWeight] = React.useState('');
+
+      // UI State
+      const [activeTab, setActiveTab] = React.useState('input');
+      const [expandedInputSections, setExpandedInputSections] = React.useState({
+        context: false,
+        pain: false,
+        meds: true,
+        factors: false,
+      });
+
+      const medd = React.useMemo(() => calculateMEDD(opioids, pca), [opioids, pca]);
+
+      // Drug definitions
+      const ivOpioids = [
+        { name: 'Morphine IV', unit: 'mg' },
+        { name: 'Hydromorphone IV', unit: 'mg' },
+        { name: 'Fentanyl IV', unit: 'mcg' },
+        { name: 'Ketorolac IV', unit: 'mg' },
+        { name: 'Ketamine IV', unit: 'mg' },
+        { name: 'Methadone IV', unit: 'mg' },
+      ];
+
+      const poOpioids = [
+        { name: 'Morphine IR', unit: 'mg' },
+        { name: 'Morphine ER', unit: 'mg' },
+        { name: 'Oxycodone IR', unit: 'mg' },
+        { name: 'Oxycodone ER', unit: 'mg' },
+        { name: 'Hydromorphone PO', unit: 'mg' },
+        { name: 'Hydrocodone/APAP', unit: 'mg' },
+        { name: 'Tramadol', unit: 'mg' },
+        { name: 'Methadone PO', unit: 'mg' },
+        { name: 'Oxymorphone', unit: 'mg' },
+        { name: 'Tapentadol', unit: 'mg' },
+        { name: 'Ketamine PO', unit: 'mg' },
+      ];
+
+      const otherRouteOpioids = [
+        { name: 'Fentanyl Patch', unit: 'mcg' },
+        { name: 'Buprenorphine SL', unit: 'mg' },
+        { name: 'Buprenorphine Patch', unit: 'mcg/hr' },
+        { name: 'Buprenorphine Injection', unit: 'mg' },
+      ];
+
+      const nonOpioidDrugs = [
+        { name: 'Acetaminophen', hasDose: true, defaultDose: '650' },
+        { name: 'Ibuprofen', hasDose: false },
+        { name: 'Celecoxib', hasDose: false },
+        { name: 'Naproxen', hasDose: false },
+        { name: 'Gabapentin', hasDose: true, defaultDose: '300' },
+        { name: 'Pregabalin', hasDose: true, defaultDose: '75' },
+        { name: 'Duloxetine', hasDose: false },
+        { name: 'Amitriptyline', hasDose: true, defaultDose: '10' },
+        { name: 'Nortriptyline', hasDose: true, defaultDose: '10' },
+        { name: 'Cyclobenzaprine', hasDose: false },
+        { name: 'Methocarbamol', hasDose: false },
+        { name: 'Baclofen', hasDose: true, defaultDose: '5' },
+        { name: 'Tizanidine', hasDose: true, defaultDose: '2' },
+        { name: 'Lidocaine patch 5%', hasDose: false },
+        { name: 'Topical diclofenac', hasDose: false },
+        { name: 'Suzetrigine', hasDose: true, defaultDose: '100' },
+      ];
+
+      const infusionDrugs = [
+        'Ketamine infusion',
+        'Lidocaine IV infusion',
+        'Epidural',
+        'Peripheral nerve block (single shot)',
+        'Continuous nerve block catheter',
+        'Dexmedetomidine',
+      ];
+
+      const frequencyOptions = ['PRN', 'Q2H PRN', 'Q2H', 'Q3H PRN', 'Q3H', 'Q4H PRN', 'Q4H', 'Q6H', 'Q8H', 'Q12H', 'Q24H', 'Q72H', 'Continuous'];
+      const qualityOptions = ['Aching/Throbbing', 'Burning/Shooting', 'Cramping/Colicky', 'Sharp/Stabbing', 'Dull/Pressure'];
+
+      // Handlers
+      const toggleInputSection = (section) => {
+        setExpandedInputSections((prev) => ({
+          ...prev,
+          [section]: !prev[section],
+        }));
+      };
+
+      const toggleConsultType = (type) => {
+        if (consultTypes.includes(type)) {
+          setConsultTypes(consultTypes.filter(t => t !== type));
+        } else {
+          setConsultTypes([...consultTypes, type]);
+        }
+      };
+
+      const addOpioidFromButton = (drugObj) => {
+        if (opioidFormDose) {
+          const frequency = selectedOpioidButton.includes('IV') ? 'Q4H PRN' : 'Q4H';
+          setOpioids([
+            ...opioids,
+            {
+              drug: drugObj.name,
+              dose: opioidFormDose,
+              frequency: opioidFormFreq || frequency,
+              unit: opioidFormUnit,
+            },
+          ]);
+          setOpioidFormDose('');
+          setOpioidFormFreq(selectedOpioidButton.includes('IV') ? 'Q4H PRN' : 'Q4H');
+          setOpioidFormUnit('mg');
+          setSelectedOpioidButton(null);
+        }
+      };
+
+      const removeOpioid = (index) => {
+        setOpioids(opioids.filter((_, i) => i !== index));
+      };
+
+      const toggleNonOpioid = (drugName) => {
+        if (nonOpioids[drugName]) {
+          const copy = { ...nonOpioids };
+          delete copy[drugName];
+          setNonOpioids(copy);
+        } else {
+          setNonOpioids({
+            ...nonOpioids,
+            [drugName]: { active: true, dose: '', scheduled: false },
+          });
+        }
+      };
+
+      const toggleInfusion = (infusionName) => {
+        if (infusions[infusionName]) {
+          const copy = { ...infusions };
+          delete copy[infusionName];
+          setInfusions(copy);
+        } else {
+          setInfusions({ ...infusions, [infusionName]: true });
+        }
+      };
+
+      const toggleMOUD = (moudName) => {
+        const newMoud = { ...moud };
+        if (newMoud[moudName]) {
+          delete newMoud[moudName];
+        } else {
+          newMoud[moudName] = { active: true, dose: '', route: 'oral' };
+        }
+        setMoud(newMoud);
+      };
+
+      // Recommendation Engine
+      const generateRecommendations = React.useMemo(() => {
+        const recs = {
+          assessment: '',
+          nonOpioidBackbone: [],
+          opioidManagement: [],
+          dosingSuggestions: [],
+          adjuvant: [],
+          moudSpecific: [],
+          regional: [],
+          monitoring: [],
+          disposition: [],
+        };
+
+        // Pain mechanism detection
+        const nociceptiveMarkers = painQuality.filter((q) =>
+          ['Aching/Throbbing', 'Dull/Pressure'].includes(q)
+        ).length;
+        const neuropathicMarkers = painQuality.filter((q) =>
+          ['Burning/Shooting'].includes(q)
+        ).length;
+        const visceralMarkers = painQuality.filter((q) =>
+          ['Cramping/Colicky'].includes(q)
+        ).length;
+
+        let painMechanism = 'Mixed';
+        if (neuropathicMarkers > 0 && nociceptiveMarkers === 0 && visceralMarkers === 0) {
+          painMechanism = 'Neuropathic';
+        } else if (nociceptiveMarkers > 0 && neuropathicMarkers === 0 && visceralMarkers === 0) {
+          painMechanism = 'Nociceptive';
+        } else if (visceralMarkers > 0 && neuropathicMarkers === 0) {
+          painMechanism = 'Visceral';
+        }
+
+        // Assessment summary
+        const homeNote = homeOME && toleranceStatus === 'tolerant' ? ` Home OME: ${homeOME} mg.` : '';
+        const consultNote = consultTypes.length > 0 ? `Consult types: ${consultTypes.join(', ')}.` : '';
+        recs.assessment = `${painMechanism} pain, NRS at rest ${painAtRest}/10, with activity ${painWithActivity}/10. Current MEDD: ${medd} mg OME.${homeNote} Tolerance: ${toleranceStatus}.${consultNote}`;
+
+        // ===== DOSING SUGGESTIONS =====
+        const hasIVOpioids = opioids.some((o) => ['Morphine IV', 'Hydromorphone IV', 'Fentanyl IV'].includes(o.drug));
+        if (hasIVOpioids && toleratingPO) {
+          const ivMedications = opioids.filter((o) => ['Morphine IV', 'Hydromorphone IV', 'Fentanyl IV'].includes(o.drug));
+
+          const conversionDetails = [];
+          ivMedications.forEach((iv) => {
+            const poOptions = [];
+
+            const morphineConv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, 'Morphine PO', 0.25);
+            if (morphineConv) {
+              poOptions.push(`Morphine IR ${Math.round(morphineConv.adjusted)}mg ${iv.frequency}`);
+            }
+
+            const oxyConv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, 'Oxycodone PO', 0.25);
+            if (oxyConv) {
+              poOptions.push(`Oxycodone IR ${Math.round(oxyConv.adjusted)}mg ${iv.frequency}`);
+            }
+
+            const hmConv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, 'Hydromorphone PO', 0.25);
+            if (hmConv) {
+              poOptions.push(`Hydromorphone PO ${Math.round(hmConv.adjusted)}mg ${iv.frequency}`);
+            }
+
+            if (poOptions.length > 0) {
+              conversionDetails.push({
+                iv: `${iv.drug} ${iv.dose}${iv.unit} ${iv.frequency}`,
+                poOptions: poOptions.join(' OR '),
+              });
+            }
+          });
+
+          if (conversionDetails.length > 0) {
+            conversionDetails.forEach((detail) => {
+              const sourceDrug = ivMedications[0].drug;
+              const sourceDose = parseFloat(ivMedications[0].dose);
+              const sourceFreq = ivMedications[0].frequency;
+              const sourceMEDD = sourceDose * (MEDD_FACTORS[sourceDrug] || 1) * frequencyToDaily(sourceFreq);
+              const oxyEquiv = sourceMEDD / 1.5;
+              const adjustedOxy = oxyEquiv * 0.75;
+
+              recs.dosingSuggestions.push({
+                priority: 'green',
+                text: `IV→PO: From ${detail.iv} → ${detail.poOptions}`,
+                why: `Current: ${sourceDrug} ${sourceDose}${ivMedications[0].unit} ${sourceFreq} → daily dose ${sourceDose * frequencyToDaily(sourceFreq)}${ivMedications[0].unit} → ${sourceMEDD} OME. Equianalgesic to oxycodone: ${sourceMEDD}/1.5 = ${Math.round(oxyEquiv)}mg/day. Apply 25% cross-tolerance reduction: ${Math.round(adjustedOxy)}mg/day recommended for transition. Patient tolerating PO; simplifies regimen and expedites discharge.`,
+              });
+            });
+          }
+        }
+
+        // Breakthrough dose calculation
+        if (medd > 0) {
+          const breakthroughOME = Math.round(medd * 0.15);
+          const btDoses = [];
+
+          btDoses.push(`Morphine IV ${Math.round(breakthroughOME / 3)}mg Q2-3H PRN`);
+
+          const hmBT = breakthroughOME / 20;
+          btDoses.push(`Hydromorphone IV ${Math.round(hmBT * 10) / 10}mg Q3H PRN`);
+
+          const oxyBT = breakthroughOME / 1.5;
+          btDoses.push(`Oxycodone IR ${Math.round(oxyBT)}mg Q3-4H PRN`);
+
+          recs.dosingSuggestions.push({
+            priority: 'green',
+            text: `Breakthrough dose suggestions (10-20% of daily MEDD): ${btDoses.join(', ')}`,
+            why: `Current MEDD is ${medd} mg. Breakthrough dosing at 10-15% = ${breakthroughOME} mg OME. Prevents inadequate coverage between scheduled doses. Titrate based on frequency of use.`,
+          });
+        }
+
+        // Opioid-naive starting doses
+        if (toleranceStatus === 'naive' && opioids.length === 0 && controlStatus !== 'Yes') {
+          const ageReduction = comorbidities.includes('Age ≥65') ? '(reduce by 50%)' : '';
+          recs.dosingSuggestions.push({
+            priority: 'green',
+            text: `Opioid-naive starting doses: Morphine 2-4mg IV Q4H PRN or Hydromorphone 0.2-0.5mg IV Q3-4H PRN ${ageReduction}`,
+            why: 'Patient is opioid-naive. Conservative starting doses with close reassessment in 15-30 minutes; titrate based on response and respiratory status.',
+          });
+        }
+
+        // Methadone rotation warning
+        if (opioids.some((o) => o.drug === 'Methadone PO' || o.drug === 'Methadone IV')) {
+          recs.dosingSuggestions.push({
+            priority: 'yellow',
+            text: 'Methadone rotation: Use non-linear conversion ratios (OME ≤30→2:1, 31-99→4:1, 100-299→8:1, ≥300→12:1). Verify MEDD calculation.',
+            why: 'Methadone has complex pharmacokinetics, long half-life, and narrow therapeutic window. Non-linear conversion accounts for accumulation. Specialist input recommended.',
+          });
+        }
+
+        // ===== NON-OPIOID BACKBONE =====
+        const hasApap = nonOpioids['Acetaminophen'];
+        if (!hasApap && !comorbidities.includes('Severe/cirrhosis')) {
+          recs.nonOpioidBackbone.push({
+            priority: 'green',
+            text: 'Acetaminophen 650–1000 mg Q6H scheduled (max 3–4 g/day, less if hepatic disease)',
+            why: 'First-line multimodal analgesic. Opioid-sparing. Safe in most populations. Reduces opioid requirements.',
+          });
+        }
+
+        const hasNSAID = Object.keys(nonOpioids).some((k) => ['Ibuprofen', 'Celecoxib', 'Naproxen'].includes(k)) || opioids.some((o) => o.drug === 'Ketorolac IV');
+        const contraindNSAID =
+          comorbidities.includes('Active PUD/GI bleed') ||
+          comorbidities.includes('CKD stage 5/dialysis') ||
+          comorbidities.includes('Thrombocytopenia') ||
+          comorbidities.includes('On anticoagulation');
+
+        if (!hasNSAID && !contraindNSAID) {
+          const suggestion = painAtRest > 6 || controlStatus === 'No' ? 'Ketorolac 15–30 mg IV Q6H (max 5 days)' : 'Consider ibuprofen 400 mg PO Q6H PRN';
+          recs.nonOpioidBackbone.push({
+            priority: 'green',
+            text: suggestion,
+            why: 'NSAIDs reduce opioid requirements by 20-30%. Ketorolac preferred for acute severe pain due to IV availability and potency. Use lowest effective dose.',
+          });
+        } else if (contraindNSAID) {
+          const contraindReasons = comorbidities.filter((c) =>
+            ['Active PUD/GI bleed', 'CKD stage 5/dialysis', 'Thrombocytopenia', 'On anticoagulation'].includes(c)
+          ).join(', ');
+          recs.nonOpioidBackbone.push({
+            priority: 'red',
+            text: `NSAIDs contraindicated: ${contraindReasons}`,
+            why: `Patient has contraindication(s). Avoid NSAIDs due to risk of GI bleeding (PUD/bleed), renal deterioration (CKD 5), bleeding (thrombocytopenia, anticoagulation).`,
+          });
+        }
+
+        const hasGabapentinoid = Object.keys(nonOpioids).some((k) => ['Gabapentin', 'Pregabalin'].includes(k));
+        if (!hasGabapentinoid && (painMechanism.includes('Neuropathic') || ['Post-op general', 'Post-op spine', 'Post-op thoracic'].includes(primaryCondition))) {
+          const doseNote = comorbidities.some((c) => c.includes('CKD')) ? ' (adjust for renal)' : '';
+          recs.nonOpioidBackbone.push({
+            priority: 'green',
+            text: `Gabapentin 300 mg TID or Pregabalin 75 mg BID${doseNote}`,
+            why: 'Pain mechanism includes neuropathic component or post-surgical context. Gabapentinoids provide adjuvant analgesia and are opioid-sparing. Adjust doses in renal impairment.',
+          });
+        }
+
+        // Suzetrigine recommendation
+        if (!nonOpioids['Suzetrigine'] && controlStatus === 'No' && (contraindNSAID || medd > 90 || toleranceStatus === 'tolerant')) {
+          recs.nonOpioidBackbone.push({
+            priority: 'green',
+            text: 'Consider Suzetrigine 100mg PO TID (Journavx)',
+            why: 'Pain uncontrolled AND patient has NSAID contraindication OR MEDD>90 OR opioid-tolerant. Suzetrigine is a selective Nav1.7 sodium channel inhibitor, non-opioid mechanism, FDA-approved for moderate-to-severe acute pain. Does not cause respiratory depression or interact with opioids.',
+          });
+        }
+
+        // ===== OPIOID MANAGEMENT =====
+        if (toleranceStatus === 'naive' && controlStatus === 'No' && opioids.length === 0) {
+          recs.opioidManagement.push({
+            priority: 'green',
+            text: 'Initiate opioid titration: conservative starting doses with 15-30 min IV reassessment or 1-2 hour PO reassessment.',
+            why: 'Opioid-naive patients require careful titration to target analgesia while monitoring for adverse effects (respiratory depression, nausea, somnolence).',
+          });
+        } else if (toleranceStatus === 'tolerant' && controlStatus === 'No') {
+          const homeNote = homeOME ? `(home baseline: ${homeOME} mg OME)` : '(unspecified)';
+          recs.opioidManagement.push({
+            priority: 'yellow',
+            text: `Opioid-tolerant patient: ensure home baseline equivalent is met ${homeNote}. Consider opioid rotation or escalation.`,
+            why: `Patient is opioid-tolerant. Verify home regimen is continued to prevent withdrawal. If inadequate control despite home dose + acute additions, consider rotation or further escalation.`,
+          });
+        }
+
+        if (medd > 90) {
+          recs.opioidManagement.push({
+            priority: 'red',
+            text: `HIGH MEDD (${medd} mg OME): maximize multimodal, consider rotation, add ketamine, enhanced monitoring.`,
+            why: `MEDD >90 mg OME associated with increased overdose risk, respiratory depression, and adverse effects. Prioritize non-opioid adjuvants and regional analgesia before further escalation.`,
+          });
+        }
+
+        // Flag meperidine
+        if (opioids.some((o) => o.drug === 'Meperidine PO' || o.drug === 'Meperidine IV')) {
+          recs.opioidManagement.push({
+            priority: 'red',
+            text: 'Meperidine: generally avoid. Seizure risk, normeperidine accumulation, especially >48 hours.',
+            why: 'Beers criteria recommends avoiding meperidine due to neurotoxic metabolite (normeperidine). Poor choice for acute pain. Use alternative opioid.',
+          });
+        }
+
+        // ===== MOUD-SPECIFIC =====
+        Object.keys(moud).forEach((moudType) => {
+          if (moud[moudType].active) {
+            const dose = moud[moudType].dose;
+            const doseText = dose ? ` at ${dose} mg/day` : '';
+
+            if (moudType === 'Buprenorphine') {
+              recs.moudSpecific.push({
+                priority: 'yellow',
+                text: `Continue buprenorphine${doseText} (DO NOT discontinue). Consider split dosing (TID–QID) for improved analgesia.`,
+                why: `Patient on buprenorphine. Partial mu-receptor agonist provides lower analgesic ceiling. Continue baseline dose to prevent withdrawal. Full agonist opioids may require higher doses due to partial occupancy. Splitting dose over day improves coverage.`,
+              });
+              recs.moudSpecific.push({
+                priority: 'green',
+                text: 'Coordinate with addiction medicine. Consider ketamine infusion for adjuvant analgesia.',
+                why: 'Specialist co-management improves pain control and recovery outcomes. Ketamine provides NMDA antagonism without relying on mu-receptor activity.',
+              });
+            } else if (moudType === 'Suboxone') {
+              recs.moudSpecific.push({
+                priority: 'yellow',
+                text: `Continue buprenorphine/naloxone (Suboxone)${doseText} (DO NOT discontinue). Consider split dosing (TID–QID).`,
+                why: `Patient on Suboxone (buprenorphine/naloxone combination). The naloxone component is minimally bioavailable sublingually and acts as abuse deterrent. Clinical implications same as buprenorphine alone. Continue to prevent withdrawal; split dosing for better analgesia.`,
+              });
+            } else if (moudType === 'Methadone') {
+              recs.moudSpecific.push({
+                priority: 'green',
+                text: `Continue methadone${doseText} (verify with OTP/pharmacy). This provides baseline opioid maintenance but is NOT analgesic dosing; supplement with multimodal and additional opioids.`,
+                why: `Patient on methadone maintenance${doseText}. Maintenance dose provides only baseline opioid effect, not analgesia for acute pain. Requires supplemental opioids, NSAIDs, and adjuvants. May need to coordinate with OTP for dose timing.`,
+              });
+              recs.moudSpecific.push({
+                priority: 'yellow',
+                text: 'Monitor QTc interval, especially with QT-prolonging agents. Avoid opioid rotation TO methadone without specialist input.',
+                why: 'Methadone prolongs QTc; risk of torsades de pointes with other QT-prolonging drugs (macrolides, antipsychotics, some antiemetics). Complex pharmacokinetics and pharmacogenetics require specialist guidance.',
+              });
+            } else if (moudType === 'Naltrexone') {
+              const route = moud[moudType].route || 'oral';
+              if (route === 'oral') {
+                recs.moudSpecific.push({
+                  priority: 'red',
+                  text: 'Naltrexone 50mg PO daily blocks opioid receptors. Discontinue; opioid analgesia effective ~72 hours after last dose.',
+                  why: `Naltrexone is a pure opioid antagonist. Blocks mu-receptors; full agonist opioids ineffective while on therapy. Washout ~72 hours after discontinuation. Plan pain management without opioids (regional, multimodal) during naltrexone period.`,
+                });
+              } else {
+                recs.moudSpecific.push({
+                  priority: 'red',
+                  text: 'Naltrexone (Vivitrol) 380mg IM provides ~30-day opioid receptor blockade. Opioids will be INEFFECTIVE.',
+                  why: `Injectable naltrexone provides 30-day antagonism. Opioid analgesia completely blocked during this period. Requires aggressive multimodal: NSAIDs, gabapentinoids, ketamine, regional analgesia.`,
+                });
+              }
+              recs.moudSpecific.push({
+                priority: 'yellow',
+                text: 'Maximize multimodal: NSAIDs, gabapentinoids, ketamine infusion, regional blocks. Urgent addiction medicine consult.',
+                why: 'Non-opioid approaches essential during naltrexone blockade. Specialist should coordinate pain and addiction management.',
+              });
+            }
+          }
+        });
+
+        // OUD history (without current MOUD)
+        if (hasOUD && Object.keys(moud).filter(k => moud[k].active).length === 0) {
+          recs.moudSpecific.push({
+            priority: 'yellow',
+            text: 'History of OUD noted. Use opioids judiciously with close monitoring. Consider addiction medicine co-management.',
+            why: 'Patient with OUD history (in recovery). Higher relapse risk if opioids used. Favor scheduled multimodal regimen over PRN opioid-heavy approaches. Implement monitoring for aberrant use patterns.',
+          });
+        }
+
+        // ===== ADJUVANT THERAPIES =====
+        if (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No')) {
+          recs.adjuvant.push({
+            priority: 'yellow',
+            text: 'Ketamine infusion: 0.1–0.3 mg/kg/hr (sub-anesthetic). Consider if opioid-tolerant + inadequate control or OIH suspected.',
+            why: `MEDD ${medd} or tolerant patient with inadequate control. Ketamine is NMDA antagonist; reduces opioid requirement and prevents opioid-induced hyperalgesia (OIH). Dose based on weight. Caution with uncontrolled HTN, psychosis, elevated ICP.`,
+          });
+        }
+
+        // Ketamine PO recommendation
+        const hasKetaminePO = nonOpioids['Ketamine PO'] || opioids.some(o => o.drug === 'Ketamine PO');
+        if (!hasKetaminePO && (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No'))) {
+          recs.adjuvant.push({
+            priority: 'green',
+            text: 'Consider Ketamine PO 25-50mg TID',
+            why: `MEDD >90 or opioid-tolerant with inadequate control. Ketamine PO is non-opioid adjuvant with NMDA antagonism. Can be added to multimodal regimen. Monitor for dissociative effects.`,
+          });
+        }
+
+        if ((painMechanism.includes('Neuropathic') || painMechanism === 'Mixed') && !infusions['Lidocaine IV infusion']) {
+          recs.adjuvant.push({
+            priority: 'green',
+            text: 'Lidocaine IV infusion: 1–2 mg/kg bolus over 30 min, then 0.5–2 mg/min. Especially for post-op neuropathic pain.',
+            why: 'Pain has neuropathic component. Lidocaine is local anesthetic adjuvant; reduces hyperalgesia and allodynia. Opioid-sparing. No respiratory depression.',
+          });
+        }
+
+        if (comorbidities.includes('Active delirium') || sedationStatus === 'Somnolent') {
+          recs.adjuvant.push({
+            priority: 'yellow',
+            text: 'Consider dexmedetomidine infusion (ICU setting) for opioid-sparing analgesia with reduced delirium risk.',
+            why: 'Patient has active delirium or somnolence. Alpha-2 agonist (dexmedetomidine) provides analgesia and anxiolysis without respiratory depression. Preferable to opioids in this context.',
+          });
+        }
+
+        // ===== REGIONAL ANALGESIA =====
+        if (['Post-op ortho', 'Post-op thoracic', 'Post-op general', 'Trauma/fracture'].includes(primaryCondition) || consultTypes.includes('Post-surgical')) {
+          const hasBlock = infusions['Epidural'] || infusions['Peripheral nerve block (single shot)'] || infusions['Continuous nerve block catheter'];
+          const contraindBlock = comorbidities.includes('Thrombocytopenia') || comorbidities.includes('On anticoagulation');
+
+          if (!hasBlock && !contraindBlock) {
+            recs.regional.push({
+              priority: 'green',
+              text: 'Regional analgesia: consider peripheral nerve block (single-shot or continuous catheter) or epidural if not contraindicated.',
+              why: 'Post-surgical or traumatic pain. Regional techniques provide superior analgesia with opioid requirement reduced by 30-50%. Improves mobility and recovery.',
+            });
+          }
+        }
+
+        // ===== MONITORING & SAFETY =====
+        if (medd > 90) {
+          recs.monitoring.push({
+            priority: 'red',
+            text: 'Naloxone at bedside. Continuous pulse oximetry. Respiratory monitoring (rate and effort).',
+            why: 'High-dose opioids (>90 mg OME daily) carry increased risk of respiratory depression and overdose. Continuous monitoring with immediate reversal agent available.',
+          });
+        }
+
+        if ((comorbidities.includes('OSA') || comorbidities.includes('COPD')) && medd > 45) {
+          recs.monitoring.push({
+            priority: 'yellow',
+            text: 'Continuous pulse oximetry and capnography if available. Monitor for hypercarbia.',
+            why: `Patient has respiratory comorbidity (OSA or COPD) and MEDD >45 mg. Opioids risk respiratory depression and CO2 retention. Enhanced monitoring required.`,
+          });
+        }
+
+        if (opioids.length > 0) {
+          recs.monitoring.push({
+            priority: 'green',
+            text: 'Bowel regimen: senna + docusate or PEG. Reassess q48–72h.',
+            why: 'Opioid-induced constipation occurs in ~80% of patients on opioids. Prophylactic bowel regimen required. Avoid naloxegol/methylnaltrexone unless refractory.',
+          });
+        }
+
+        if (comorbidities.includes('Age ≥65') && (opioids.length > 0 || Object.keys(nonOpioids).length > 0)) {
+          recs.monitoring.push({
+            priority: 'yellow',
+            text: 'Fall precautions: evaluate for polypharmacy, sedation, orthostatic risk.',
+            why: 'Beers criteria: older adults at high risk for falls with CNS-active drugs (opioids, sedatives, anticonvulsants). Implement fall precautions, mobility assessment.',
+          });
+        }
+
+        // ===== PCA RECOMMENDATIONS =====
+        if (pca.active) {
+          if (toleratingPO) {
+            recs.disposition.push({
+              priority: 'green',
+              text: 'Patient on PCA and tolerating PO: transition to scheduled PO + PRN breakthrough dosing.',
+              why: `PCA provides flexibility but limits mobility and recovery. With PO tolerance, transition to stable oral regimen (e.g., ${Math.round(medd / 4)}-${Math.round(medd / 3)} mg Q4-6H scheduled) with PRN breakthrough options.`,
+            });
+          } else {
+            const estimatedDemandDose = parseFloat(pca.demandDose) || 0;
+            const lockout = parseFloat(pca.lockout) || 6;
+            const basalRate = parseFloat(pca.basalRate) || 0;
+            const estimatedDailyDemand = (estimatedDemandDose * (60 / lockout) * 24 * 0.3);
+            const totalEstimated = estimatedDailyDemand + (basalRate * 24);
+
+            if (estimatedDailyDemand > (totalEstimated * 0.7)) {
+              recs.disposition.push({
+                priority: 'yellow',
+                text: 'High PCA demand use detected. Consider increasing basal rate or adding adjuvants to reduce frequency of demands.',
+                why: `Estimated daily demand dose: ${Math.round(estimatedDailyDemand)} mg. Frequent demands indicate inadequate baseline analgesia. Increase scheduled component or add multimodal adjuvants.`,
+              });
+            }
+          }
+        }
+
+        // ===== DISPOSITION =====
+        if (controlStatus === 'Yes' && painAtRest <= 4) {
+          recs.disposition.push({
+            priority: 'green',
+            text: 'Pain well-controlled. Plan transition to PO if tolerating, wean infusions, consider opioid de-escalation protocol.',
+            why: 'Pain control achieved. Simplify regimen and transition toward discharge. Implement opioid-sparing multimodal maintenance.',
+          });
+        } else if (controlStatus === 'Partial') {
+          recs.disposition.push({
+            priority: 'yellow',
+            text: 'Partial control: continue current regimen with reassessment in 4–6 hours. Adjust doses or add adjuvants.',
+            why: 'Pain partially controlled. Further optimization before major escalation. Consider increasing breakthrough dosing frequency or adding adjuvants.',
+          });
+        } else if (controlStatus === 'No') {
+          recs.disposition.push({
+            priority: 'red',
+            text: 'Inadequate control: escalate opioid doses, add adjuvants, consider rotation or regional analgesia.',
+            why: 'Uncontrolled pain requires urgent intervention. Assess for causes (inadequate dosing, rapid metabolism, pain mechanism mismatch). Multimodal approach more effective than opioid-only escalation.',
+          });
+        }
+
+        return recs;
+      }, [
+        consultTypes,
+        primaryCondition,
+        postOpDay,
+        painAtRest,
+        painWithActivity,
+        painQuality,
+        controlStatus,
+        painPattern,
+        toleranceStatus,
+        homeOME,
+        hasOUD,
+        moud,
+        comorbidities,
+        sedationStatus,
+        toleratingPO,
+        medd,
+        opioids,
+        nonOpioids,
+        infusions,
+        pca,
+      ]);
+
+      // Copy recommendations to clipboard
+      const copyRecommendations = () => {
+        let text = 'ACUTE PAIN SERVICE CLINICAL DECISION SUPPORT\n\n';
+        text += 'ASSESSMENT:\n' + generateRecommendations.assessment + '\n\n';
+
+        if (generateRecommendations.dosingSuggestions.length > 0) {
+          text += 'DOSING RECOMMENDATIONS:\n' + generateRecommendations.dosingSuggestions.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        if (generateRecommendations.nonOpioidBackbone.length > 0) {
+          text += 'NON-OPIOID BACKBONE:\n' + generateRecommendations.nonOpioidBackbone.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        if (generateRecommendations.opioidManagement.length > 0) {
+          text += 'OPIOID MANAGEMENT:\n' + generateRecommendations.opioidManagement.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        if (generateRecommendations.moudSpecific.length > 0) {
+          text += 'MOUD-SPECIFIC:\n' + generateRecommendations.moudSpecific.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        if (generateRecommendations.adjuvant.length > 0) {
+          text += 'ADJUVANT THERAPIES:\n' + generateRecommendations.adjuvant.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        if (generateRecommendations.regional.length > 0) {
+          text += 'REGIONAL ANALGESIA:\n' + generateRecommendations.regional.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        if (generateRecommendations.monitoring.length > 0) {
+          text += 'MONITORING & SAFETY:\n' + generateRecommendations.monitoring.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        if (generateRecommendations.disposition.length > 0) {
+          text += 'DISPOSITION:\n' + generateRecommendations.disposition.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        }
+
+        text += '---\nEducational Tool — Verify all recommendations with clinical judgment and institutional protocols.';
+        navigator.clipboard.writeText(text);
+      };
+
+      // Recommendation Item Component
+      const RecommendationItem = ({ rec }) => {
+        const [expanded, setExpanded] = React.useState(false);
+        const priorityColor = {
+          red: 'border-l-4 border-red-600 bg-red-50',
+          yellow: 'border-l-4 border-yellow-600 bg-yellow-50',
+          green: 'border-l-4 border-green-600 bg-green-50',
+        };
+        const iconColor = {
+          red: 'text-red-600',
+          yellow: 'text-yellow-600',
+          green: 'text-green-600',
+        };
+
+        return (
+          <div className={`p-3 rounded mb-2 ${priorityColor[rec.priority]}`}>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="w-full flex items-start justify-between text-left"
+            >
+              <div className="flex-1">
+                <div className="flex items-start gap-2">
+                  {rec.priority === 'red' && <AlertCircle size={18} className={`${iconColor[rec.priority]} flex-shrink-0`} />}
+                  {rec.priority === 'yellow' && <AlertTriangle size={18} className={`${iconColor[rec.priority]} flex-shrink-0`} />}
+                  {rec.priority === 'green' && <CheckCircle size={18} className={`${iconColor[rec.priority]} flex-shrink-0`} />}
+                  <p className="text-sm font-semibold text-slate-800">{rec.text}</p>
+                </div>
+              </div>
+              {expanded ? <ChevronUp size={18} className="flex-shrink-0" /> : <ChevronDown size={18} className="flex-shrink-0" />}
+            </button>
+            {expanded && <p className="text-xs text-slate-600 mt-2 ml-6">{rec.why}</p>}
+          </div>
+        );
+      };
+
+      // Pain Score Selector
+      const PainScoreRow = ({ value, onChange }) => (
+        <div className="flex gap-1 flex-wrap">
+          {Array.from({ length: 11 }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => onChange(i)}
+              className={`w-8 h-8 rounded text-sm font-semibold transition ${
+                value === i
+                  ? 'bg-red-600 text-white'
+                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+              }`}
+            >
+              {i}
+            </button>
+          ))}
+        </div>
+      );
+
+      // Opioid Button Grid Section
+      const OpioidButtonGrid = ({ opioids: opioidList, title }) => (
+        <div className="mb-6">
+          <h3 className="font-semibold text-slate-700 mb-3">{title}</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {opioidList.map((drugObj) => (
+              <div key={drugObj.name}>
+                <button
+                  onClick={() => {
+                    if (selectedOpioidButton === drugObj.name) {
+                      setSelectedOpioidButton(null);
+                    } else {
+                      setSelectedOpioidButton(drugObj.name);
+                      setOpioidFormUnit(drugObj.unit);
+                      setOpioidFormFreq(drugObj.name.includes('IV') ? 'Q4H PRN' : 'Q4H');
+                    }
+                  }}
+                  className={`w-full h-12 p-2 rounded text-sm font-semibold transition flex items-center justify-center ${
+                    selectedOpioidButton === drugObj.name
+                      ? 'bg-blue-600 text-white border-2 border-blue-800'
+                      : 'bg-slate-100 text-slate-800 border-2 border-slate-300 hover:bg-slate-200'
+                  }`}
+                >
+                  {drugObj.name}
+                </button>
+
+                {selectedOpioidButton === drugObj.name && (
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-300 rounded">
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700">Dose ({drugObj.unit})</label>
+                        <input
+                          type="number"
+                          value={opioidFormDose}
+                          onChange={(e) => setOpioidFormDose(e.target.value)}
+                          placeholder=""
+                          className="w-full border border-blue-300 rounded px-2 py-1 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700">Frequency</label>
+                        <select
+                          value={opioidFormFreq}
+                          onChange={(e) => setOpioidFormFreq(e.target.value)}
+                          className="w-full border border-blue-300 rounded px-2 py-1 text-sm"
+                        >
+                          {frequencyOptions.map((f) => (
+                            <option key={f} value={f}>
+                              {f}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        onClick={() => addOpioidFromButton(drugObj)}
+                        className="w-full bg-blue-600 text-white py-1 rounded text-sm font-semibold hover:bg-blue-700"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      // INPUT TAB CONTENT
+      const InputTab = () => (
+        <div className="space-y-0">
+          {/* CONTEXT SECTION */}
+          <div className="border-b">
+            <button
+              onClick={() => toggleInputSection('context')}
+              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
+            >
+              <h3 className="font-semibold text-slate-800">Context</h3>
+              {expandedInputSections.context ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+
+            {expandedInputSections.context && (
+              <div className="px-4 py-4 space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Reason for Consult (select all that apply)</label>
+                  <div className="space-y-2">
+                    {['Post-surgical', 'Medical acute', 'Acute-on-chronic', 'Opioid management', 'Complex/refractory'].map((type) => (
+                      <label key={type} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={consultTypes.includes(type)}
+                          onChange={() => toggleConsultType(type)}
+                          className="mr-3"
+                        />
+                        <span className="text-sm">{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Primary Condition</label>
+                  <select
+                    value={primaryCondition}
+                    onChange={(e) => setPrimaryCondition(e.target.value)}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                  >
+                    <option value="">Select...</option>
+                    {[
+                      'Sickle cell',
+                      'Pancreatitis',
+                      'Trauma/fracture',
+                      'Cancer pain',
+                      'Post-op general',
+                      'Post-op ortho',
+                      'Post-op spine',
+                      'Post-op thoracic',
+                      'Post-op abdominal',
+                      'Burns',
+                      'Other',
+                    ].map((cond) => (
+                      <option key={cond} value={cond}>
+                        {cond}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Post-Op / Hospital Day</label>
+                  <input
+                    type="number"
+                    value={postOpDay}
+                    onChange={(e) => setPostOpDay(e.target.value)}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                    placeholder="e.g., 1, 5"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* PAIN SECTION */}
+          <div className="border-b">
+            <button
+              onClick={() => toggleInputSection('pain')}
+              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
+            >
+              <h3 className="font-semibold text-slate-800">Pain Assessment</h3>
+              {expandedInputSections.pain ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+
+            {expandedInputSections.pain && (
+              <div className="px-4 py-4 space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain at Rest (0–10)</label>
+                  <PainScoreRow value={painAtRest} onChange={setPainAtRest} />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain with Activity (0–10)</label>
+                  <PainScoreRow value={painWithActivity} onChange={setPainWithActivity} />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain Quality (select all that apply)</label>
+                  <div className="space-y-2">
+                    {qualityOptions.map((q) => (
+                      <label key={q} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={painQuality.includes(q)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPainQuality([...painQuality, q]);
+                            } else {
+                              setPainQuality(painQuality.filter((pq) => pq !== q));
+                            }
+                          }}
+                          className="mr-3"
+                        />
+                        <span className="text-sm">{q}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Control Status</label>
+                  <div className="space-y-2">
+                    {['Yes', 'Partial', 'No'].map((status) => (
+                      <label key={status} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="control"
+                          value={status}
+                          checked={controlStatus === status}
+                          onChange={(e) => setControlStatus(e.target.value)}
+                          className="mr-3"
+                        />
+                        <span className="text-sm">{status}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain Pattern</label>
+                  <div className="space-y-2">
+                    {['Constant', 'Intermittent', 'Movement-related'].map((pattern) => (
+                      <label key={pattern} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="pattern"
+                          value={pattern}
+                          checked={painPattern === pattern}
+                          onChange={(e) => setPainPattern(e.target.value)}
+                          className="mr-3"
+                        />
+                        <span className="text-sm">{pattern}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* MEDICATIONS SECTION */}
+          <div className="border-b">
+            <button
+              onClick={() => toggleInputSection('meds')}
+              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
+            >
+              <h3 className="font-semibold text-slate-800">Current Medications</h3>
+              {expandedInputSections.meds ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+
+            {expandedInputSections.meds && (
+              <div className="px-4 py-4 space-y-6">
+                {/* MEDD Badge */}
+                {medd > 0 && (
+                  <div className={`p-3 rounded-lg font-semibold text-white text-center text-lg ${
+                    medd > 90 ? 'bg-red-600' : medd > 50 ? 'bg-orange-600' : 'bg-blue-600'
+                  }`}>
+                    MEDD: {medd} mg OME
+                  </div>
+                )}
+
+                {/* Active Medications List */}
+                {opioids.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Active Opioids</h4>
+                    <div className="space-y-2">
+                      {opioids.map((med, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between bg-slate-100 p-2 rounded text-sm"
+                        >
+                          <div>
+                            <div className="font-semibold text-slate-800">{med.drug}</div>
+                            <div className="text-xs text-slate-600">
+                              {med.dose}{med.unit} {med.frequency}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeOpioid(idx)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* IV Opioids Grid */}
+                <OpioidButtonGrid opioids={ivOpioids} title="IV Opioids" />
+
+                {/* PCA SECTION */}
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-slate-700">PCA (Patient-Controlled Analgesia)</h4>
+                    <button
+                      onClick={() => setPCA({ ...pca, active: !pca.active })}
+                      className={`px-3 py-1 rounded text-sm font-semibold transition ${
+                        pca.active
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
+                      }`}
+                    >
+                      {pca.active ? 'Active' : 'Inactive'}
+                    </button>
+                  </div>
+
+                  {pca.active && (
+                    <div className="bg-purple-50 border border-purple-300 rounded p-4 space-y-3">
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700 block mb-1">Drug</label>
+                        <div className="space-y-1">
+                          {['Hydromorphone', 'Morphine', 'Fentanyl'].map((drug) => (
+                            <label key={drug} className="flex items-center">
+                              <input
+                                type="radio"
+                                name="pcaDrug"
+                                value={drug}
+                                checked={pca.drug === drug}
+                                onChange={(e) => setPCA({ ...pca, drug: e.target.value })}
+                                className="mr-2"
+                              />
+                              <span className="text-sm">{drug}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700 block mb-1">
+                          Demand Dose ({pca.drug === 'Fentanyl' ? 'mcg' : 'mg'})
+                        </label>
+                        <input
+                          type="number"
+                          value={pca.demandDose}
+                          onChange={(e) => setPCA({ ...pca, demandDose: e.target.value })}
+                          placeholder="e.g., 0.2"
+                          className="w-full border border-purple-300 rounded px-2 py-1 text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700 block mb-1">Lockout Interval (minutes)</label>
+                        <input
+                          type="number"
+                          value={pca.lockout}
+                          onChange={(e) => setPCA({ ...pca, lockout: e.target.value })}
+                          placeholder="e.g., 6"
+                          className="w-full border border-purple-300 rounded px-2 py-1 text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700 block mb-1">
+                          Basal Rate ({pca.drug === 'Fentanyl' ? 'mcg/hr' : 'mg/hr'})
+                        </label>
+                        <input
+                          type="number"
+                          value={pca.basalRate}
+                          onChange={(e) => setPCA({ ...pca, basalRate: e.target.value })}
+                          placeholder="e.g., 0 (optional)"
+                          className="w-full border border-purple-300 rounded px-2 py-1 text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* PO Opioids Grid */}
+                <OpioidButtonGrid opioids={poOpioids} title="PO Opioids" />
+
+                {/* Other Route Opioids */}
+                <OpioidButtonGrid opioids={otherRouteOpioids} title="Other Routes" />
+
+                {/* Non-Opioid Analgesics */}
+                <div className="pt-4 border-t">
+                  <h4 className="font-semibold text-slate-700 mb-3">Non-Opioid Analgesics</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {nonOpioidDrugs.map((drug) => (
+                      <button
+                        key={drug.name}
+                        onClick={() => toggleNonOpioid(drug.name)}
+                        className={`px-3 py-2 rounded text-sm font-semibold transition ${
+                          nonOpioids[drug.name]
+                            ? 'bg-green-600 text-white'
+                            : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
+                        }`}
+                      >
+                        {drug.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Infusions / Interventional */}
+                <div className="pt-4 border-t">
+                  <h4 className="font-semibold text-slate-700 mb-3">Infusions / Interventional</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {infusionDrugs.map((inf) => (
+                      <button
+                        key={inf}
+                        onClick={() => toggleInfusion(inf)}
+                        className={`px-3 py-2 rounded text-sm font-semibold transition ${
+                          infusions[inf]
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
+                        }`}
+                      >
+                        {inf}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* PATIENT FACTORS SECTION */}
+          <div className="border-b">
+            <button
+              onClick={() => toggleInputSection('factors')}
+              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
+            >
+              <h3 className="font-semibold text-slate-800">Patient Factors</h3>
+              {expandedInputSections.factors ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+
+            {expandedInputSections.factors && (
+              <div className="px-4 py-4 space-y-4">
+                {/* SECTION A: Tolerance Status */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Tolerance Status</label>
+                  <div className="space-y-2">
+                    {['naive', 'tolerant'].map((status) => (
+                      <label key={status} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="toleranceStatus"
+                          value={status}
+                          checked={toleranceStatus === status}
+                          onChange={(e) => setToleranceStatus(e.target.value)}
+                          className="mr-3"
+                        />
+                        <span className="text-sm">{status === 'naive' ? 'Opioid naive' : 'Opioid tolerant'}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {toleranceStatus === 'tolerant' && (
+                  <div>
+                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Home OME (mg/day)</label>
+                    <input
+                      type="number"
+                      value={homeOME}
+                      onChange={(e) => setHomeOME(e.target.value)}
+                      className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                      placeholder="e.g., 60"
+                    />
+                  </div>
+                )}
+
+                {/* SECTION B: History of OUD */}
+                <div className="pt-4 border-t">
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">OUD History</label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={hasOUD}
+                      onChange={(e) => setHasOUD(e.target.checked)}
+                      className="mr-3"
+                    />
+                    <span className="text-sm">History of Opioid Use Disorder</span>
+                  </label>
+                </div>
+
+                {/* SECTION C: MOUD */}
+                <div className="pt-4 border-t">
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">MOUD (Medications for OUD)</label>
+                  <div className="space-y-3">
+                    {['Methadone', 'Buprenorphine', 'Suboxone', 'Naltrexone'].map((moudName) => (
+                      <div key={moudName}>
+                        <label className="flex items-center mb-1">
+                          <input
+                            type="checkbox"
+                            checked={!!moud[moudName]?.active}
+                            onChange={() => toggleMOUD(moudName)}
+                            className="mr-2"
+                          />
+                          <span className="text-sm font-semibold">{moudName}</span>
+                        </label>
+
+                        {moud[moudName]?.active && (
+                          <div className="ml-5 space-y-2 bg-slate-50 p-2 rounded">
+                            {moudName === 'Naltrexone' ? (
+                              <div>
+                                <label className="text-xs font-semibold text-slate-700 block mb-1">Route</label>
+                                <div className="space-y-1">
+                                  {['oral', 'injectable'].map((route) => (
+                                    <label key={route} className="flex items-center">
+                                      <input
+                                        type="radio"
+                                        name={`naltrexone_route`}
+                                        value={route}
+                                        checked={(moud[moudName]?.route || 'oral') === route}
+                                        onChange={(e) => setMoud({ ...moud, [moudName]: { ...moud[moudName], route: e.target.value } })}
+                                        className="mr-2"
+                                      />
+                                      <span className="text-xs">{route === 'oral' ? 'Oral 50mg daily' : 'Injectable (Vivitrol) 380mg monthly'}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <label className="text-xs font-semibold text-slate-700 block mb-1">Dose (mg/day)</label>
+                                <input
+                                  type="number"
+                                  value={moud[moudName]?.dose || ''}
+                                  onChange={(e) => setMoud({ ...moud, [moudName]: { ...moud[moudName], dose: e.target.value } })}
+                                  className="w-full border border-slate-300 rounded px-2 py-1 text-sm"
+                                  placeholder="e.g., 80"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Comorbidities */}
+                <div className="pt-4 border-t">
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Comorbidities</label>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {[
+                      'Age ≥65',
+                      'AKI',
+                      'CKD stage 3-4',
+                      'CKD stage 5/dialysis',
+                      'Hepatic mild-mod',
+                      'Severe/cirrhosis',
+                      'OSA',
+                      'COPD',
+                      'CAD/recent MI',
+                      'Heart failure',
+                      'Active PUD/GI bleed',
+                      'Thrombocytopenia',
+                      'On anticoagulation',
+                      'Active delirium',
+                      'Dementia',
+                      'Seizure disorder',
+                    ].map((comorbid) => (
+                      <label key={comorbid} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={comorbidities.includes(comorbid)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setComorbidities([...comorbidities, comorbid]);
+                            } else {
+                              setComorbidities(comorbidities.filter((c) => c !== comorbid));
+                            }
+                          }}
+                          className="mr-2"
+                        />
+                        <span>{comorbid}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sedation Status */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Sedation Status</label>
+                  <div className="space-y-2">
+                    {['Alert', 'Drowsy', 'Somnolent'].map((status) => (
+                      <label key={status} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="sedation"
+                          value={status}
+                          checked={sedationStatus === status}
+                          onChange={(e) => setSedationStatus(e.target.value)}
+                          className="mr-3"
+                        />
+                        <span className="text-sm">{status}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tolerating PO */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Tolerating PO?</label>
+                  <div className="flex gap-4">
+                    {[true, false].map((value) => (
+                      <label key={String(value)} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="po"
+                          checked={toleratingPO === value}
+                          onChange={() => setToleatingPO(value)}
+                          className="mr-3"
+                        />
+                        <span className="text-sm">{value ? 'Yes' : 'No'}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Weight */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Weight (kg) - for ketamine dosing</label>
+                  <input
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                    placeholder="Optional"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+      // RECOMMENDATIONS TAB CONTENT
+      const RecommendationsTab = () => (
+        <div className="space-y-4 pb-6">
+          {/* Assessment Summary */}
+          <div className="bg-slate-100 p-4 rounded">
+            <p className="text-sm font-semibold text-slate-700 mb-2">Assessment</p>
+            <p className="text-sm text-slate-800">{generateRecommendations.assessment}</p>
+          </div>
+
+          {/* Dosing Suggestions */}
+          {generateRecommendations.dosingSuggestions.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                Dosing Recommendations ({generateRecommendations.dosingSuggestions.length})
+              </h3>
+              {generateRecommendations.dosingSuggestions.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* Non-Opioid Backbone */}
+          {generateRecommendations.nonOpioidBackbone.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                Non-Opioid Backbone ({generateRecommendations.nonOpioidBackbone.length})
+              </h3>
+              {generateRecommendations.nonOpioidBackbone.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* Opioid Management */}
+          {generateRecommendations.opioidManagement.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                Opioid Management ({generateRecommendations.opioidManagement.length})
+              </h3>
+              {generateRecommendations.opioidManagement.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* MOUD-Specific */}
+          {generateRecommendations.moudSpecific.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                MOUD-Specific ({generateRecommendations.moudSpecific.length})
+              </h3>
+              {generateRecommendations.moudSpecific.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* Adjuvant Therapies */}
+          {generateRecommendations.adjuvant.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                Adjuvant Therapies ({generateRecommendations.adjuvant.length})
+              </h3>
+              {generateRecommendations.adjuvant.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* Regional Analgesia */}
+          {generateRecommendations.regional.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                Regional Analgesia ({generateRecommendations.regional.length})
+              </h3>
+              {generateRecommendations.regional.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* Monitoring & Safety */}
+          {generateRecommendations.monitoring.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                Monitoring & Safety ({generateRecommendations.monitoring.length})
+              </h3>
+              {generateRecommendations.monitoring.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* Disposition */}
+          {generateRecommendations.disposition.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">
+                Disposition ({generateRecommendations.disposition.length})
+              </h3>
+              {generateRecommendations.disposition.map((rec, idx) => (
+                <RecommendationItem key={idx} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {/* Copy Button */}
+          <button
+            onClick={copyRecommendations}
+            className="w-full bg-blue-600 text-white py-3 rounded font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 mt-4"
+          >
+            <Copy size={18} /> Copy All Recommendations
+          </button>
+        </div>
+      );
+
+      // Responsive Layout
+      const isWideScreen = typeof window !== 'undefined' && window.innerWidth >= 1024;
+      const [screenWidth, setScreenWidth] = React.useState(
+        typeof window !== 'undefined' ? window.innerWidth : 1024
+      );
+
+      React.useEffect(() => {
+        const handleResize = () => setScreenWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
+      const wide = screenWidth >= 1024;
+
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+          {/* Top Banner */}
+          <div className="bg-red-700 text-white text-xs text-center py-2 font-semibold">
+            Educational Tool — Verify all recommendations with clinical judgment and institutional protocols.
+          </div>
+
+          {/* Header */}
+          <div className="bg-slate-800 text-white p-4 shadow-lg">
+            <h1 className="text-2xl font-bold">Acute Pain Service DSS</h1>
+            <p className="text-xs text-slate-300">Clinical Decision Support for Resident Physicians</p>
+          </div>
+
+          {/* MEDD Badge */}
+          {medd > 0 && (
+            <div className={`mx-4 mt-4 p-4 rounded-lg font-bold text-white text-center text-lg ${
+              medd > 90 ? 'bg-red-600' : medd > 50 ? 'bg-orange-600' : 'bg-blue-600'
+            }`}>
+              MEDD: {medd} mg OME {homeOME && toleranceStatus === 'tolerant' && `(Home: ${homeOME}, Delta: ${medd - parseInt(homeOME)})`}
+            </div>
+          )}
+
+          {/* Main Content */}
+          <div className="p-4 max-w-7xl mx-auto">
+            {wide ? (
+              // SIDE-BY-SIDE LAYOUT
+              <div className="grid grid-cols-2 gap-4 min-h-screen">
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <InputTab />
+                </div>
+                <div className="bg-white rounded-lg shadow-lg p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 250px)' }}>
+                  <RecommendationsTab />
+                </div>
+              </div>
+            ) : (
+              // MOBILE TABBED LAYOUT
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-20">
+                {/* Tab Content */}
+                <div className="p-6">
+                  {activeTab === 'input' ? <InputTab /> : <RecommendationsTab />}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Tab Navigation */}
+          {!wide && (
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-300 shadow-lg flex gap-0">
+              <button
+                onClick={() => setActiveTab('input')}
+                className={`flex-1 py-4 text-sm font-semibold transition ${
+                  activeTab === 'input'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
+                }`}
+              >
+                Input
+              </button>
+              <button
+                onClick={() => setActiveTab('recs')}
+                className={`flex-1 py-4 text-sm font-semibold transition ${
+                  activeTab === 'recs'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
+                }`}
+              >
+                Recommendations
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(AcutePainDSS));
+  </script>
+</body>
+</html>
