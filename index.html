@@ -8,193 +8,202 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    .rec-card { transition: all 0.15s; }
+    .rec-card:hover { transform: translateY(-1px); }
+    .math-block { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.75rem; background: #f1f5f9; padding: 0.5rem; border-radius: 4px; margin-top: 0.25rem; white-space: pre-wrap; }
+    .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .section-label { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.5rem; }
+    @media print { .no-print { display: none !important; } }
+  </style>
 </head>
 <body>
-  <div id="password-gate" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1e293b;font-family:system-ui,sans-serif;">
-    <div style="background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.3);text-align:center;max-width:320px;width:90%;">
-      <h2 style="margin:0 0 0.5rem;color:#1e293b;font-size:1.25rem;">Acute Pain Service DSS</h2>
-      <p style="margin:0 0 1.5rem;color:#64748b;font-size:0.875rem;">Educational Tool — Enter access code</p>
-      <input id="pw-input" type="password" placeholder="Access code" autofocus
-        style="width:100%;padding:0.75rem;border:2px solid #cbd5e1;border-radius:8px;font-size:1rem;box-sizing:border-box;margin-bottom:0.75rem;text-align:center;"
-        onkeydown="if(event.key==='Enter')document.getElementById('pw-btn').click()">
-      <button id="pw-btn" onclick="if(document.getElementById('pw-input').value==='aps'){document.getElementById('password-gate').style.display='none';document.getElementById('app-container').style.display='block';}else{document.getElementById('pw-input').style.borderColor='#ef4444';document.getElementById('pw-input').placeholder='Incorrect — try again';document.getElementById('pw-input').value='';}"
-        style="width:100%;padding:0.75rem;background:#2563eb;color:white;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;">
-        Enter
-      </button>
-    </div>
-  </div>
-  <div id="app-container" style="display:none;">
+  <div id="app-container">
     <div id="root"></div>
   </div>
 
   <script type="text/babel">
     // SVG Icon Components
     const ChevronDown = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"></polyline></svg>
     );
-
     const ChevronUp = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="18 15 12 9 6 15"></polyline>
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"></polyline></svg>
     );
-
     const X = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     );
-
     const Copy = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
     );
 
-    const AlertCircle = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-    );
-
-    const AlertTriangle = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.04h16.94a2 2 0 0 0 1.71-3.04l-8.47-14.14a2 2 0 0 0-3.42 0z"></path>
-        <line x1="12" y1="9" x2="12" y2="13"></line>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-      </svg>
-    );
-
-    const CheckCircle = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-      </svg>
-    );
-
-    // MEDD Conversion Factors
+    // ========== MEDD CONVERSION ENGINE ==========
+    // Factors: multiply (dose × factor × doses_per_day) = daily OME
+    // All oral morphine equivalents per mg (or mcg for fentanyl)
     const MEDD_FACTORS = {
-      'Morphine PO': 1,
+      // IV Opioids
       'Morphine IV': 3,
-      'Oxycodone PO': 1.5,
-      'Hydromorphone PO': 4,
       'Hydromorphone IV': 20,
-      'Hydrocodone/APAP': 1,
-      'Fentanyl IV': 0.3,
-      'Fentanyl Patch': 2.4,
-      'Ketamine PO': 0,
-      'Methadone PO': null,
-      'Tramadol PO': 0.1,
-      'Codeine PO': 0.15,
-      'Oxymorphone PO': 3,
-      'Tapentadol PO': 0.4,
+      'Fentanyl IV': 0.3,        // per mcg: 100mcg fentanyl IV = 30 OME ≈ morphine IV 10mg
       'Ketorolac IV': 0,
       'Ketamine IV': 0,
+      'Methadone IV': null,       // non-linear, handled separately
+      // PO Opioids
+      'Morphine IR': 1,
+      'Morphine ER': 1,
+      'Morphine PO': 1,          // alias
+      'Oxycodone IR': 1.5,
+      'Oxycodone ER': 1.5,
+      'Oxycodone PO': 1.5,       // alias
+      'Hydromorphone PO': 4,
+      'Hydrocodone/APAP': 1,
+      'Tramadol': 0.1,
+      'Codeine': 0.15,
+      'Methadone PO': null,       // non-linear
+      'Oxymorphone': 3,
+      'Tapentadol': 0.4,
+      'Ketamine PO': 0,
+      // Other routes
+      'Fentanyl Patch': 2.4,      // per mcg/hr: 25mcg/hr = 60 OME/day (conservative)
       'Buprenorphine SL': null,
       'Buprenorphine Patch': null,
       'Buprenorphine Injection': null,
       'Suzetrigine': 0,
     };
 
+    // PCA drugs → their IV MEDD factors
+    const PCA_FACTORS = {
+      'Hydromorphone': 20,   // mg → OME (IV)
+      'Morphine': 3,         // mg → OME (IV)
+      'Fentanyl': 0.3,       // mcg → OME (IV)
+    };
+
     const frequencyToDaily = (frequency) => {
       const map = {
         PRN: 0.5,
-        'Q2H PRN': 6,
-        Q2H: 12,
-        'Q3H PRN': 4,
-        Q3H: 8,
-        'Q4H PRN': 3,
-        Q4H: 6,
-        Q6H: 4,
-        Q8H: 3,
-        Q12H: 2,
-        Q24H: 1,
-        Q72H: 0.33,
+        'Q2H PRN': 6, Q2H: 12,
+        'Q3H PRN': 4, Q3H: 8,
+        'Q4H PRN': 3, Q4H: 6,
+        'Q6H PRN': 2, Q6H: 4,
+        'Q8H': 3, 'Q8H PRN': 1.5,
+        Q12H: 2, Q24H: 1, Q72H: 0.33,
         Continuous: 24,
       };
       return map[frequency] || 1;
     };
 
-    const getMethadoneMEDDFactor = (dailyDose) => {
-      if (dailyDose <= 20) return 4;
-      if (dailyDose <= 40) return 8;
-      if (dailyDose <= 60) return 10;
-      return 12;
+    // Methadone: non-linear conversion. Thresholds based on daily OME equivalent.
+    // Returns methadone→OME factor (multiply methadone mg × factor = OME)
+    // At low doses methadone is ~4:1 (morphine:methadone), at high doses ~12:1
+    const getMethadoneMEDDFactor = (dailyMethadoneMg) => {
+      // Approximate: reverse-engineer OME from methadone dose
+      // These are clinically derived approximations
+      if (dailyMethadoneMg <= 10) return 4;    // methadone ≤10mg/day ≈ OME ≤40
+      if (dailyMethadoneMg <= 20) return 5;    // methadone 11-20 ≈ OME 55-100
+      if (dailyMethadoneMg <= 40) return 8;    // methadone 21-40 ≈ OME 168-320
+      if (dailyMethadoneMg <= 60) return 10;   // methadone 41-60 ≈ OME 410-600
+      return 12;                                // methadone >60 ≈ OME >720
     };
 
     const calculateMEDD = (opioids, pca) => {
       let totalMEDD = 0;
+      const breakdown = [];
 
       opioids.forEach((med) => {
-        const { drug, dose, frequency, unit } = med;
-
+        const { drug, dose, frequency } = med;
         if (!dose) return;
-
-        let factor = MEDD_FACTORS[drug];
         let baseDose = parseFloat(dose);
+        let factor = MEDD_FACTORS[drug];
+        let dailyDoses = frequencyToDaily(frequency);
+        let contribution = 0;
 
-        if (drug === 'Methadone PO') {
-          const dailyDose = baseDose * frequencyToDaily(frequency);
+        if (drug === 'Methadone PO' || drug === 'Methadone IV') {
+          const dailyDose = baseDose * dailyDoses;
           factor = getMethadoneMEDDFactor(dailyDose);
-          totalMEDD += baseDose * factor * frequencyToDaily(frequency);
+          contribution = dailyDose * factor;
+          breakdown.push({ drug, dose: baseDose, freq: frequency, factor: `${factor} (non-linear)`, daily: dailyDose, ome: Math.round(contribution) });
         } else if (drug === 'Fentanyl Patch') {
-          totalMEDD += baseDose * 2.4;
-        } else if (drug === 'Fentanyl IV') {
-          totalMEDD += baseDose * factor * frequencyToDaily(frequency);
-        } else if (!['Buprenorphine SL', 'Buprenorphine Patch', 'Buprenorphine Injection', 'Ketorolac IV', 'Ketamine IV', 'Ketamine PO', 'Suzetrigine'].includes(drug)) {
-          if (factor) {
-            totalMEDD += baseDose * factor * frequencyToDaily(frequency);
-          }
+          // Patch: strength in mcg/hr, applied Q72H. OME = mcg × 2.4 per day
+          contribution = baseDose * 2.4;
+          breakdown.push({ drug, dose: baseDose, freq: 'Q72H', factor: '2.4/day', daily: baseDose, ome: Math.round(contribution) });
+        } else if (factor === null || factor === undefined) {
+          // Buprenorphine, etc. — don't contribute to MEDD in standard way
+          breakdown.push({ drug, dose: baseDose, freq: frequency, factor: 'N/A', daily: 0, ome: 0, note: 'Excluded from MEDD' });
+        } else if (factor === 0) {
+          // Non-opioids in the list (ketorolac, ketamine, suzetrigine)
+        } else {
+          contribution = baseDose * factor * dailyDoses;
+          breakdown.push({ drug, dose: baseDose, freq: frequency, factor, daily: baseDose * dailyDoses, ome: Math.round(contribution) });
         }
+        totalMEDD += contribution;
       });
 
       // PCA contribution
+      let pcaContribution = 0;
+      let pcaDetail = null;
       if (pca.active && pca.drug) {
         const demandDose = parseFloat(pca.demandDose) || 0;
         const lockout = parseFloat(pca.lockout) || 6;
         const basalRate = parseFloat(pca.basalRate) || 0;
+        const pcaFactor = PCA_FACTORS[pca.drug] || 1;
 
-        // Estimate demand uses (30% of possible demands)
-        const estimatedDailyDemand = (demandDose * (60 / lockout) * 24 * 0.3);
+        const maxDemandsPerHr = 60 / lockout;
+        const estimatedDailyDemand = demandDose * maxDemandsPerHr * 24 * 0.3;
         const estimatedDailyBasal = basalRate * 24;
         const totalDailyDose = estimatedDailyDemand + estimatedDailyBasal;
 
-        const pcaFactor = MEDD_FACTORS[pca.drug] || 1;
-        if (pcaFactor) {
-          totalMEDD += totalDailyDose * pcaFactor;
-        }
+        pcaContribution = totalDailyDose * pcaFactor;
+        pcaDetail = {
+          drug: pca.drug,
+          demand: demandDose,
+          lockout,
+          basal: basalRate,
+          estDaily: Math.round(totalDailyDose * 10) / 10,
+          factor: pcaFactor,
+          ome: Math.round(pcaContribution),
+          note: `30% demand utilization assumed (${Math.round(estimatedDailyDemand * 10) / 10} demand + ${estimatedDailyBasal} basal = ${Math.round(totalDailyDose * 10) / 10} ${pca.drug === 'Fentanyl' ? 'mcg' : 'mg'}/day)`,
+        };
+        totalMEDD += pcaContribution;
       }
 
-      return Math.round(totalMEDD);
+      return { total: Math.round(totalMEDD), breakdown, pcaDetail };
     };
 
     const calculateEquianalgesicDose = (sourceDrug, sourceDose, sourceFrequency, targetDrug, crossToleranceReduction = 0.25) => {
-      const sourceMEDD = sourceDose * (MEDD_FACTORS[sourceDrug] || 1) * frequencyToDaily(sourceFrequency);
-      const targetFactor = MEDD_FACTORS[targetDrug] || 1;
+      const sourceFactor = MEDD_FACTORS[sourceDrug];
+      const targetFactor = MEDD_FACTORS[targetDrug];
+      if (!sourceFactor || !targetFactor || targetFactor === 0) return null;
 
-      if (!targetFactor || targetFactor === 0) return null;
-
-      const equianalgesic = sourceMEDD / targetFactor;
-      const adjusted = equianalgesic * (1 - crossToleranceReduction);
+      const perDoseOME = sourceDose * sourceFactor;
+      const equiPerDose = perDoseOME / targetFactor;
+      const adjusted = equiPerDose * (1 - crossToleranceReduction);
 
       return {
-        equianalgesic: Math.round(equianalgesic * 10) / 10,
+        perDoseOME: Math.round(perDoseOME * 10) / 10,
+        equianalgesic: Math.round(equiPerDose * 10) / 10,
         adjusted: Math.round(adjusted * 10) / 10,
+        math: `${sourceDrug} ${sourceDose}${sourceDrug.includes('Fentanyl') ? 'mcg' : 'mg'} × ${sourceFactor} = ${Math.round(perDoseOME * 10) / 10} OME/dose → ÷ ${targetFactor} = ${Math.round(equiPerDose * 10) / 10}mg → −25% cross-tolerance = ${Math.round(adjusted * 10) / 10}mg`,
       };
     };
 
-    // Main App Component
+    // Round to practical clinical doses
+    const roundToClinic = (dose, drug) => {
+      if (drug.includes('Hydromorphone') && drug.includes('IV')) {
+        return Math.round(dose * 5) / 5; // round to 0.2mg
+      }
+      if (drug.includes('Fentanyl')) return Math.round(dose / 25) * 25; // round to 25mcg
+      if (dose < 2) return Math.round(dose * 10) / 10; // round to 0.1
+      if (dose < 10) return Math.round(dose * 2) / 2; // round to 0.5
+      return Math.round(dose / 2.5) * 2.5; // round to 2.5mg
+    };
+
+    // ========== MAIN APP ==========
     const AcutePainDSS = () => {
       // Context
       const [consultTypes, setConsultTypes] = React.useState([]);
       const [primaryCondition, setPrimaryCondition] = React.useState('');
       const [postOpDay, setPostOpDay] = React.useState('');
+      const [toleratingPO, setToleratingPO] = React.useState(true);
 
       // Pain Assessment
       const [painAtRest, setPainAtRest] = React.useState(5);
@@ -215,27 +224,38 @@
       const [opioidFormFreq, setOpioidFormFreq] = React.useState('Q4H');
       const [opioidFormUnit, setOpioidFormUnit] = React.useState('mg');
 
-      // Patient Factors - RESTRUCTURED
+      // Patient Factors
       const [toleranceStatus, setToleranceStatus] = React.useState('naive');
       const [homeOME, setHomeOME] = React.useState('');
       const [hasOUD, setHasOUD] = React.useState(false);
       const [moud, setMoud] = React.useState({});
       const [comorbidities, setComorbidities] = React.useState([]);
       const [sedationStatus, setSedationStatus] = React.useState('Alert');
-      const [toleratingPO, setToleatingPO] = React.useState(true);
       const [onMonitoring, setOnMonitoring] = React.useState(false);
       const [weight, setWeight] = React.useState('');
 
       // UI State
       const [activeTab, setActiveTab] = React.useState('input');
       const [expandedInputSections, setExpandedInputSections] = React.useState({
-        context: false,
-        pain: false,
-        meds: true,
-        factors: false,
+        context: true, pain: true, meds: true, factors: true,
       });
+      const [showMEDDBreakdown, setShowMEDDBreakdown] = React.useState(false);
+      const [copiedNote, setCopiedNote] = React.useState(false);
 
-      const medd = React.useMemo(() => calculateMEDD(opioids, pca), [opioids, pca]);
+      const meddResult = React.useMemo(() => calculateMEDD(opioids, pca), [opioids, pca]);
+      const medd = meddResult.total;
+
+      const resetAll = () => {
+        setConsultTypes([]); setPrimaryCondition(''); setPostOpDay('');
+        setPainAtRest(5); setPainWithActivity(5); setPainQuality([]);
+        setControlStatus('Partial'); setPainPattern('Constant');
+        setOpioids([]); setNonOpioids({}); setInfusions({});
+        setPCA({ active: false, drug: 'Hydromorphone', demandDose: '', lockout: '6', basalRate: '' });
+        setSelectedOpioidButton(null); setOpioidFormDose(''); setOpioidFormFreq('Q4H'); setOpioidFormUnit('mg');
+        setToleranceStatus('naive'); setHomeOME(''); setHasOUD(false); setMoud({});
+        setComorbidities([]); setSedationStatus('Alert'); setToleratingPO(true);
+        setOnMonitoring(false); setWeight('');
+      };
 
       // Drug definitions
       const ivOpioids = [
@@ -255,6 +275,7 @@
         { name: 'Hydromorphone PO', unit: 'mg' },
         { name: 'Hydrocodone/APAP', unit: 'mg' },
         { name: 'Tramadol', unit: 'mg' },
+        { name: 'Codeine', unit: 'mg' },
         { name: 'Methadone PO', unit: 'mg' },
         { name: 'Oxymorphone', unit: 'mg' },
         { name: 'Tapentadol', unit: 'mg' },
@@ -262,7 +283,7 @@
       ];
 
       const otherRouteOpioids = [
-        { name: 'Fentanyl Patch', unit: 'mcg' },
+        { name: 'Fentanyl Patch', unit: 'mcg/hr' },
         { name: 'Buprenorphine SL', unit: 'mg' },
         { name: 'Buprenorphine Patch', unit: 'mcg/hr' },
         { name: 'Buprenorphine Injection', unit: 'mg' },
@@ -288,74 +309,46 @@
       ];
 
       const infusionDrugs = [
-        'Ketamine infusion',
-        'Lidocaine IV infusion',
-        'Epidural',
-        'Peripheral nerve block (single shot)',
-        'Continuous nerve block catheter',
-        'Dexmedetomidine',
+        'Ketamine infusion', 'Lidocaine IV infusion', 'Epidural',
+        'Peripheral nerve block (single shot)', 'Continuous nerve block catheter', 'Dexmedetomidine',
       ];
 
-      const frequencyOptions = ['PRN', 'Q2H PRN', 'Q2H', 'Q3H PRN', 'Q3H', 'Q4H PRN', 'Q4H', 'Q6H', 'Q8H', 'Q12H', 'Q24H', 'Q72H', 'Continuous'];
+      const frequencyOptions = ['PRN', 'Q2H PRN', 'Q2H', 'Q3H PRN', 'Q3H', 'Q4H PRN', 'Q4H', 'Q6H PRN', 'Q6H', 'Q8H PRN', 'Q8H', 'Q12H', 'Q24H', 'Q72H', 'Continuous'];
       const qualityOptions = ['Aching/Throbbing', 'Burning/Shooting', 'Cramping/Colicky', 'Sharp/Stabbing', 'Dull/Pressure'];
 
       // Handlers
       const toggleInputSection = (section) => {
-        setExpandedInputSections((prev) => ({
-          ...prev,
-          [section]: !prev[section],
-        }));
+        setExpandedInputSections((prev) => ({ ...prev, [section]: !prev[section] }));
       };
-
       const toggleConsultType = (type) => {
-        if (consultTypes.includes(type)) {
-          setConsultTypes(consultTypes.filter(t => t !== type));
-        } else {
-          setConsultTypes([...consultTypes, type]);
-        }
+        if (consultTypes.includes(type)) setConsultTypes(consultTypes.filter(t => t !== type));
+        else setConsultTypes([...consultTypes, type]);
       };
 
       const addOpioidFromButton = (drugObj) => {
         if (opioidFormDose) {
-          const frequency = selectedOpioidButton.includes('IV') ? 'Q4H PRN' : 'Q4H';
-          setOpioids([
-            ...opioids,
-            {
-              drug: drugObj.name,
-              dose: opioidFormDose,
-              frequency: opioidFormFreq || frequency,
-              unit: opioidFormUnit,
-            },
-          ]);
+          const defaultFreq = drugObj.name === 'Fentanyl Patch' ? 'Q72H' : drugObj.name.includes('IV') ? 'Q4H PRN' : 'Q4H';
+          setOpioids([...opioids, { drug: drugObj.name, dose: opioidFormDose, frequency: opioidFormFreq || defaultFreq, unit: drugObj.unit }]);
           setOpioidFormDose('');
-          setOpioidFormFreq(selectedOpioidButton.includes('IV') ? 'Q4H PRN' : 'Q4H');
+          setOpioidFormFreq(selectedOpioidButton?.includes('IV') ? 'Q4H PRN' : 'Q4H');
           setOpioidFormUnit('mg');
           setSelectedOpioidButton(null);
         }
       };
 
-      const removeOpioid = (index) => {
-        setOpioids(opioids.filter((_, i) => i !== index));
-      };
+      const removeOpioid = (index) => setOpioids(opioids.filter((_, i) => i !== index));
 
       const toggleNonOpioid = (drugName) => {
         if (nonOpioids[drugName]) {
-          const copy = { ...nonOpioids };
-          delete copy[drugName];
-          setNonOpioids(copy);
+          const copy = { ...nonOpioids }; delete copy[drugName]; setNonOpioids(copy);
         } else {
-          setNonOpioids({
-            ...nonOpioids,
-            [drugName]: { active: true, dose: '', scheduled: false },
-          });
+          setNonOpioids({ ...nonOpioids, [drugName]: { active: true, dose: '', scheduled: false } });
         }
       };
 
       const toggleInfusion = (infusionName) => {
         if (infusions[infusionName]) {
-          const copy = { ...infusions };
-          delete copy[infusionName];
-          setInfusions(copy);
+          const copy = { ...infusions }; delete copy[infusionName]; setInfusions(copy);
         } else {
           setInfusions({ ...infusions, [infusionName]: true });
         }
@@ -363,603 +356,435 @@
 
       const toggleMOUD = (moudName) => {
         const newMoud = { ...moud };
-        if (newMoud[moudName]) {
-          delete newMoud[moudName];
-        } else {
-          newMoud[moudName] = { active: true, dose: '', route: 'oral' };
-        }
+        if (newMoud[moudName]) delete newMoud[moudName];
+        else newMoud[moudName] = { active: true, dose: '', route: 'oral' };
         setMoud(newMoud);
       };
 
-      // Recommendation Engine
+      // ========== RECOMMENDATION ENGINE ==========
       const generateRecommendations = React.useMemo(() => {
-        const recs = {
-          assessment: '',
-          nonOpioidBackbone: [],
-          opioidManagement: [],
-          dosingSuggestions: [],
-          adjuvant: [],
-          moudSpecific: [],
-          regional: [],
-          monitoring: [],
-          disposition: [],
+        // Detect mechanisms
+        const hasNociceptive = painQuality.some(q => ['Aching/Throbbing', 'Dull/Pressure'].includes(q));
+        const hasNeuropathic = painQuality.some(q => ['Burning/Shooting'].includes(q));
+        const hasVisceral = painQuality.some(q => ['Cramping/Colicky'].includes(q));
+        let painMechanism = 'Undifferentiated';
+        if (hasNeuropathic && !hasNociceptive && !hasVisceral) painMechanism = 'Neuropathic';
+        else if (hasNociceptive && !hasNeuropathic && !hasVisceral) painMechanism = 'Nociceptive';
+        else if (hasVisceral && !hasNeuropathic) painMechanism = 'Visceral';
+        else if (painQuality.length > 1) painMechanism = 'Mixed nociceptive/neuropathic';
+
+        // Comorbidity helpers
+        const hasRenal = comorbidities.some(c => c.includes('CKD'));
+        const hasSevereRenal = comorbidities.includes('CKD stage 5/dialysis');
+        const hasHepatic = comorbidities.some(c => c.includes('Hepatic'));
+        const hasSevereHepatic = comorbidities.includes('Hepatic impairment (severe/cirrhosis)');
+        const isElderly = comorbidities.includes('Age ≥65');
+        const hasOSA = comorbidities.includes('OSA');
+        const hasCOPD = comorbidities.includes('COPD');
+        const contraindNSAID = comorbidities.includes('Active PUD/GI bleed') || hasSevereRenal || comorbidities.includes('Thrombocytopenia') || comorbidities.includes('On anticoagulation');
+        const hasNSAID = Object.keys(nonOpioids).some(k => ['Ibuprofen', 'Celecoxib', 'Naproxen'].includes(k)) || opioids.some(o => o.drug === 'Ketorolac IV');
+        const hasApap = !!nonOpioids['Acetaminophen'];
+        const hasGabapentinoid = Object.keys(nonOpioids).some(k => ['Gabapentin', 'Pregabalin'].includes(k));
+        const hasKetaminePO = !!nonOpioids['Ketamine PO'] || opioids.some(o => o.drug === 'Ketamine PO');
+        const hasKetamineInfusion = !!infusions['Ketamine infusion'];
+        const hasBlock = !!infusions['Epidural'] || !!infusions['Peripheral nerve block (single shot)'] || !!infusions['Continuous nerve block catheter'];
+        const activeMOUDs = Object.keys(moud).filter(k => moud[k]?.active);
+        const hasMorphine = opioids.some(o => o.drug.includes('Morphine'));
+
+        // Multimodal classes on board
+        const multimodalClasses = [];
+        if (hasApap) multimodalClasses.push('APAP');
+        if (hasNSAID) multimodalClasses.push('NSAID');
+        if (hasGabapentinoid) multimodalClasses.push('Gabapentinoid');
+        if (hasKetaminePO || hasKetamineInfusion) multimodalClasses.push('Ketamine');
+        if (hasBlock || !!infusions['Epidural']) multimodalClasses.push('Regional');
+        if (!!infusions['Lidocaine IV infusion']) multimodalClasses.push('IV Lidocaine');
+        if (!!nonOpioids['Suzetrigine']) multimodalClasses.push('Suzetrigine');
+        const multimodalCount = multimodalClasses.length;
+
+        // Scheduled vs PRN analysis
+        const scheduledOpioids = opioids.filter(o => !o.frequency.includes('PRN') && MEDD_FACTORS[o.drug] > 0);
+        const prnOpioids = opioids.filter(o => o.frequency.includes('PRN') && MEDD_FACTORS[o.drug] > 0);
+        const hasOnlyPRN = prnOpioids.length > 0 && scheduledOpioids.length === 0 && !pca.active;
+
+        const homeOMENum = parseFloat(homeOME) || 0;
+        const delta = toleranceStatus === 'tolerant' && homeOMENum > 0 ? medd - homeOMENum : null;
+
+        // Build structured output
+        const output = {
+          oneLiner: '',
+          safetyAlerts: [],      // red — things that could harm the patient RIGHT NOW
+          actionItems: [],       // yellow — specific orders to write
+          suggestions: [],       // green — things to consider
+          conversionMath: [],    // show-your-work blocks
+          dischargePlan: [],     // transition & discharge thinking
+          multimodalClasses,
+          multimodalCount,
+          painMechanism,
+          delta,
         };
 
-        // Pain mechanism detection
-        const nociceptiveMarkers = painQuality.filter((q) =>
-          ['Aching/Throbbing', 'Dull/Pressure'].includes(q)
-        ).length;
-        const neuropathicMarkers = painQuality.filter((q) =>
-          ['Burning/Shooting'].includes(q)
-        ).length;
-        const visceralMarkers = painQuality.filter((q) =>
-          ['Cramping/Colicky'].includes(q)
-        ).length;
+        // === ONE-LINER ===
+        const toleranceText = toleranceStatus === 'tolerant' ? `Opioid-tolerant (home OME ${homeOMENum || '?'})` : 'Opioid-naive';
+        const moudText = activeMOUDs.length > 0 ? `, on ${activeMOUDs.join('/')}` : '';
+        const oudText = hasOUD && activeMOUDs.length === 0 ? ', h/o OUD (no current MOUD)' : '';
+        const podText = postOpDay ? ` POD#${postOpDay}` : '';
+        const condText = primaryCondition || 'acute pain';
+        output.oneLiner = `${toleranceText}${moudText}${oudText} patient with ${condText}${podText}. ${painMechanism} pain NRS ${painAtRest}→${painWithActivity} (rest→activity). MEDD ${medd} OME. Control: ${controlStatus.toLowerCase()}.`;
 
-        let painMechanism = 'Mixed';
-        if (neuropathicMarkers > 0 && nociceptiveMarkers === 0 && visceralMarkers === 0) {
-          painMechanism = 'Neuropathic';
-        } else if (nociceptiveMarkers > 0 && neuropathicMarkers === 0 && visceralMarkers === 0) {
-          painMechanism = 'Nociceptive';
-        } else if (visceralMarkers > 0 && neuropathicMarkers === 0) {
-          painMechanism = 'Visceral';
+        // === SAFETY ALERTS ===
+        // High MEDD
+        if (medd > 120) {
+          output.safetyAlerts.push({ text: `MEDD ${medd} mg OME — very high. Naloxone at bedside, continuous SpO₂/ETCO₂. Reassess need for this dose.`, tag: 'HIGH MEDD' });
+        } else if (medd > 90) {
+          output.safetyAlerts.push({ text: `MEDD ${medd} mg OME — approaching high-risk threshold. Ensure continuous pulse oximetry, naloxone available.`, tag: 'HIGH MEDD' });
         }
 
-        // Assessment summary
-        const homeNote = homeOME && toleranceStatus === 'tolerant' ? ` Home OME: ${homeOME} mg.` : '';
-        const consultNote = consultTypes.length > 0 ? `Consult types: ${consultTypes.join(', ')}.` : '';
-        recs.assessment = `${painMechanism} pain, NRS at rest ${painAtRest}/10, with activity ${painWithActivity}/10. Current MEDD: ${medd} mg OME.${homeNote} Tolerance: ${toleranceStatus}.${consultNote}`;
+        // Morphine in renal failure
+        if (hasMorphine && hasRenal) {
+          output.safetyAlerts.push({ text: `Morphine with renal impairment: active metabolite (M6G) accumulates → prolonged sedation, respiratory depression. Switch to hydromorphone or fentanyl.`, tag: 'RENAL' });
+        }
 
-        // ===== DOSING SUGGESTIONS =====
-        const hasIVOpioids = opioids.some((o) => ['Morphine IV', 'Hydromorphone IV', 'Fentanyl IV'].includes(o.drug));
-        if (hasIVOpioids && toleratingPO) {
-          const ivMedications = opioids.filter((o) => ['Morphine IV', 'Hydromorphone IV', 'Fentanyl IV'].includes(o.drug));
+        // Gabapentinoid + opioid + elderly/OSA
+        if (hasGabapentinoid && opioids.length > 0 && (isElderly || hasOSA)) {
+          output.safetyAlerts.push({ text: `Gabapentinoid + opioid in ${isElderly ? 'elderly' : 'OSA'} patient: additive CNS/respiratory depression. FDA boxed warning. Consider lower doses or discontinuation.`, tag: 'CNS DEP' });
+        }
 
-          const conversionDetails = [];
-          ivMedications.forEach((iv) => {
-            const poOptions = [];
+        // Somnolent + opioids
+        if (sedationStatus === 'Somnolent' && opioids.length > 0) {
+          output.safetyAlerts.push({ text: `Patient somnolent on current opioid regimen. Hold further opioid doses until reassessed. Consider dose reduction.`, tag: 'SEDATION' });
+        }
 
-            const morphineConv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, 'Morphine PO', 0.25);
-            if (morphineConv) {
-              poOptions.push(`Morphine IR ${Math.round(morphineConv.adjusted)}mg ${iv.frequency}`);
-            }
+        // Naltrexone + opioids ordered
+        if (activeMOUDs.includes('Naltrexone') && opioids.length > 0) {
+          const route = moud['Naltrexone']?.route || 'oral';
+          output.safetyAlerts.push({ text: `Opioids ordered but patient on naltrexone (${route}). Opioids will be INEFFECTIVE. ${route === 'injectable' ? 'Blockade lasts ~30 days.' : 'Washout ~72h after last dose.'}`, tag: 'ANTAGONIST' });
+        }
 
-            const oxyConv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, 'Oxycodone PO', 0.25);
-            if (oxyConv) {
-              poOptions.push(`Oxycodone IR ${Math.round(oxyConv.adjusted)}mg ${iv.frequency}`);
-            }
+        // NSAID contraindicated but ordered
+        if (contraindNSAID && hasNSAID) {
+          const reasons = comorbidities.filter(c => ['Active PUD/GI bleed', 'CKD stage 5/dialysis', 'Thrombocytopenia', 'On anticoagulation'].includes(c)).join(', ');
+          output.safetyAlerts.push({ text: `NSAID on board but contraindicated: ${reasons}. Discontinue.`, tag: 'NSAID CI' });
+        }
 
-            const hmConv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, 'Hydromorphone PO', 0.25);
-            if (hmConv) {
-              poOptions.push(`Hydromorphone PO ${Math.round(hmConv.adjusted)}mg ${iv.frequency}`);
-            }
+        // Under-dosed tolerant patient
+        if (toleranceStatus === 'tolerant' && homeOMENum > 0 && medd < homeOMENum * 0.8) {
+          output.safetyAlerts.push({ text: `Current MEDD (${medd}) is ${Math.round((1 - medd/homeOMENum) * 100)}% below home baseline (${homeOMENum} OME). Risk of withdrawal and uncontrolled pain. Ensure home regimen is covered.`, tag: 'UNDER-DOSED' });
+        }
 
-            if (poOptions.length > 0) {
-              conversionDetails.push({
-                iv: `${iv.drug} ${iv.dose}${iv.unit} ${iv.frequency}`,
-                poOptions: poOptions.join(' OR '),
+        // === ACTION ITEMS (specific orders) ===
+
+        // IV→PO conversion when tolerating PO
+        const ivAnalgesicOpioids = opioids.filter(o => ['Morphine IV', 'Hydromorphone IV', 'Fentanyl IV'].includes(o.drug));
+        if (ivAnalgesicOpioids.length > 0 && toleratingPO) {
+          ivAnalgesicOpioids.forEach(iv => {
+            const targets = hasRenal
+              ? [{ drug: 'Hydromorphone PO', label: 'HM PO' }, { drug: 'Oxycodone IR', label: 'Oxy IR' }]
+              : [{ drug: 'Oxycodone IR', label: 'Oxy IR' }, { drug: 'Morphine IR', label: 'Morphine IR' }, { drug: 'Hydromorphone PO', label: 'HM PO' }];
+
+            const conversions = targets.map(t => {
+              const conv = calculateEquianalgesicDose(iv.drug, parseFloat(iv.dose), iv.frequency, t.drug, 0.25);
+              if (!conv) return null;
+              const rounded = roundToClinic(conv.adjusted, t.drug);
+              return { label: t.label, dose: rounded, drug: t.drug, math: conv.math };
+            }).filter(Boolean);
+
+            if (conversions.length > 0) {
+              const options = conversions.map(c => `${c.label} ${c.dose}mg`).join(' | ');
+              output.actionItems.push({
+                text: `IV→PO: Convert ${iv.drug} ${iv.dose}${iv.unit} ${iv.frequency} → ${options} (same frequency)`,
+                tag: 'CONVERT',
+                sub: hasRenal ? 'Morphine avoided (renal). HM/oxy preferred.' : null,
+              });
+              conversions.forEach(c => {
+                output.conversionMath.push({ label: `${iv.drug} → ${c.label}`, math: c.math });
               });
             }
           });
+        }
 
-          if (conversionDetails.length > 0) {
-            conversionDetails.forEach((detail) => {
-              const sourceDrug = ivMedications[0].drug;
-              const sourceDose = parseFloat(ivMedications[0].dose);
-              const sourceFreq = ivMedications[0].frequency;
-              const sourceMEDD = sourceDose * (MEDD_FACTORS[sourceDrug] || 1) * frequencyToDaily(sourceFreq);
-              const oxyEquiv = sourceMEDD / 1.5;
-              const adjustedOxy = oxyEquiv * 0.75;
+        // Breakthrough dosing
+        if (medd > 0) {
+          const btOME = Math.round(medd * 0.15);
+          const btMorphIV = roundToClinic(btOME / 3, 'Morphine IV');
+          const btHMIV = roundToClinic(btOME / 20, 'Hydromorphone IV');
+          const btOxy = roundToClinic(btOME / 1.5, 'Oxycodone IR');
 
-              recs.dosingSuggestions.push({
-                priority: 'green',
-                text: `IV→PO: From ${detail.iv} → ${detail.poOptions}`,
-                why: `Current: ${sourceDrug} ${sourceDose}${ivMedications[0].unit} ${sourceFreq} → daily dose ${sourceDose * frequencyToDaily(sourceFreq)}${ivMedications[0].unit} → ${sourceMEDD} OME. Equianalgesic to oxycodone: ${sourceMEDD}/1.5 = ${Math.round(oxyEquiv)}mg/day. Apply 25% cross-tolerance reduction: ${Math.round(adjustedOxy)}mg/day recommended for transition. Patient tolerating PO; simplifies regimen and expedites discharge.`,
-              });
+          let btOptions;
+          if (hasRenal) {
+            btOptions = `HM ${btHMIV}mg IV Q3H PRN | Oxy IR ${btOxy}mg PO Q4H PRN`;
+            output.actionItems.push({
+              text: `Breakthrough (15% of MEDD = ${btOME} OME): ${btOptions}`,
+              tag: 'BT DOSE',
+              sub: 'Morphine avoided (renal impairment).',
+            });
+          } else {
+            btOptions = `Morphine ${btMorphIV}mg IV Q3H PRN | HM ${btHMIV}mg IV Q3H PRN | Oxy IR ${btOxy}mg PO Q4H PRN`;
+            output.actionItems.push({
+              text: `Breakthrough (15% of MEDD = ${btOME} OME): ${btOptions}`,
+              tag: 'BT DOSE',
             });
           }
-        }
-
-        // Breakthrough dose calculation
-        if (medd > 0) {
-          const breakthroughOME = Math.round(medd * 0.15);
-          const btDoses = [];
-
-          btDoses.push(`Morphine IV ${Math.round(breakthroughOME / 3)}mg Q2-3H PRN`);
-
-          const hmBT = breakthroughOME / 20;
-          btDoses.push(`Hydromorphone IV ${Math.round(hmBT * 10) / 10}mg Q3H PRN`);
-
-          const oxyBT = breakthroughOME / 1.5;
-          btDoses.push(`Oxycodone IR ${Math.round(oxyBT)}mg Q3-4H PRN`);
-
-          recs.dosingSuggestions.push({
-            priority: 'green',
-            text: `Breakthrough dose suggestions (10-20% of daily MEDD): ${btDoses.join(', ')}`,
-            why: `Current MEDD is ${medd} mg. Breakthrough dosing at 10-15% = ${breakthroughOME} mg OME. Prevents inadequate coverage between scheduled doses. Titrate based on frequency of use.`,
-          });
+          output.conversionMath.push({ label: 'Breakthrough calculation', math: `MEDD ${medd} × 15% = ${btOME} OME → Morphine IV: ${btOME}/3 = ${btMorphIV}mg | HM IV: ${btOME}/20 = ${btHMIV}mg | Oxy IR: ${btOME}/1.5 = ${btOxy}mg` });
         }
 
         // Opioid-naive starting doses
-        if (toleranceStatus === 'naive' && opioids.length === 0 && controlStatus !== 'Yes') {
-          const ageReduction = comorbidities.includes('Age ≥65') ? '(reduce by 50%)' : '';
-          recs.dosingSuggestions.push({
-            priority: 'green',
-            text: `Opioid-naive starting doses: Morphine 2-4mg IV Q4H PRN or Hydromorphone 0.2-0.5mg IV Q3-4H PRN ${ageReduction}`,
-            why: 'Patient is opioid-naive. Conservative starting doses with close reassessment in 15-30 minutes; titrate based on response and respiratory status.',
+        if (toleranceStatus === 'naive' && opioids.length === 0 && controlStatus !== 'Yes' && !pca.active) {
+          const doseAdj = isElderly ? ' (reduce 50% for age ≥65)' : '';
+          if (toleratingPO) {
+            output.actionItems.push({
+              text: `Start: Oxycodone IR 5mg PO Q4H PRN${doseAdj} OR Morphine IR 5-10mg PO Q4H PRN${doseAdj}${hasRenal ? ' (prefer oxy if renal)' : ''}`,
+              tag: 'START',
+            });
+          }
+          output.actionItems.push({
+            text: `Start: Morphine 2-4mg IV Q4H PRN${doseAdj} OR HM 0.2-0.4mg IV Q3H PRN${doseAdj}${hasRenal ? ' (prefer HM if renal)' : ''}`,
+            tag: 'START',
+            sub: 'Reassess in 15-30 min (IV) or 60 min (PO). Titrate to NRS ≤4.',
           });
         }
 
-        // Methadone rotation warning
-        if (opioids.some((o) => o.drug === 'Methadone PO' || o.drug === 'Methadone IV')) {
-          recs.dosingSuggestions.push({
-            priority: 'yellow',
-            text: 'Methadone rotation: Use non-linear conversion ratios (OME ≤30→2:1, 31-99→4:1, 100-299→8:1, ≥300→12:1). Verify MEDD calculation.',
-            why: 'Methadone has complex pharmacokinetics, long half-life, and narrow therapeutic window. Non-linear conversion accounts for accumulation. Specialist input recommended.',
+        // Scheduled vs PRN imbalance
+        if (hasOnlyPRN && medd > 30) {
+          output.actionItems.push({
+            text: `Only PRN opioids on board (MEDD ${medd}). Convert to scheduled + PRN: schedule ~60-70% of daily requirement around the clock, keep 15% as breakthrough.`,
+            tag: 'SCHEDULE',
+            sub: 'Scheduled dosing provides more consistent analgesia, reduces pain crises, and is better for discharge planning.',
           });
         }
 
-        // ===== NON-OPIOID BACKBONE =====
-        const hasApap = nonOpioids['Acetaminophen'];
-        if (!hasApap && !comorbidities.includes('Severe/cirrhosis')) {
-          recs.nonOpioidBackbone.push({
-            priority: 'green',
-            text: 'Acetaminophen 650–1000 mg Q6H scheduled (max 3–4 g/day, less if hepatic disease)',
-            why: 'First-line multimodal analgesic. Opioid-sparing. Safe in most populations. Reduces opioid requirements.',
+        // Non-opioid backbone gaps
+        if (!hasApap && !hasSevereHepatic) {
+          output.actionItems.push({
+            text: `Add acetaminophen 1000mg PO/IV Q6H scheduled (max 3g/day${hasHepatic ? ', reduce for hepatic impairment' : ''})`,
+            tag: 'MULTIMODAL',
           });
         }
-
-        const hasNSAID = Object.keys(nonOpioids).some((k) => ['Ibuprofen', 'Celecoxib', 'Naproxen'].includes(k)) || opioids.some((o) => o.drug === 'Ketorolac IV');
-        const contraindNSAID =
-          comorbidities.includes('Active PUD/GI bleed') ||
-          comorbidities.includes('CKD stage 5/dialysis') ||
-          comorbidities.includes('Thrombocytopenia') ||
-          comorbidities.includes('On anticoagulation');
-
         if (!hasNSAID && !contraindNSAID) {
-          const suggestion = painAtRest > 6 || controlStatus === 'No' ? 'Ketorolac 15–30 mg IV Q6H (max 5 days)' : 'Consider ibuprofen 400 mg PO Q6H PRN';
-          recs.nonOpioidBackbone.push({
-            priority: 'green',
-            text: suggestion,
-            why: 'NSAIDs reduce opioid requirements by 20-30%. Ketorolac preferred for acute severe pain due to IV availability and potency. Use lowest effective dose.',
+          if (painAtRest > 6 || controlStatus === 'No') {
+            output.actionItems.push({ text: `Add ketorolac 15mg IV Q6H (max 5 days)${isElderly ? ' — use 15mg not 30mg (age ≥65)' : ''}`, tag: 'MULTIMODAL' });
+          } else {
+            output.suggestions.push({ text: `Consider NSAID: ibuprofen 400mg PO Q6H or celecoxib 200mg PO BID`, tag: 'MULTIMODAL' });
+          }
+        } else if (contraindNSAID && !hasNSAID) {
+          const reasons = comorbidities.filter(c => ['Active PUD/GI bleed', 'CKD stage 5/dialysis', 'Thrombocytopenia', 'On anticoagulation'].includes(c)).join(', ');
+          output.suggestions.push({ text: `NSAIDs contraindicated (${reasons}). Ensure other multimodal agents maximized.`, tag: 'CI' });
+        }
+
+        // Gabapentinoid
+        if (!hasGabapentinoid && (hasNeuropathic || ['Post-op general', 'Post-op spine', 'Post-op thoracic', 'Post-op vascular'].includes(primaryCondition))) {
+          const renalNote = hasRenal ? ' (reduce dose for renal)' : '';
+          output.actionItems.push({ text: `Add gabapentin 300mg PO TID${renalNote} or pregabalin 75mg PO BID${renalNote}`, tag: 'MULTIMODAL', sub: `${hasNeuropathic ? 'Neuropathic component identified. ' : ''}Gabapentinoids opioid-sparing; titrate over days.` });
+        }
+
+        // Ketamine PO
+        if (!hasKetaminePO && (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No'))) {
+          output.actionItems.push({
+            text: `Add ketamine PO 10-25mg Q6H (titrate to 50mg Q6H)`,
+            tag: 'KETAMINE',
+            sub: 'NMDA antagonist. Opioid-sparing, prevents OIH. First-line adjuvant for refractory pain in opioid-tolerant patients. PO preferred over IV for ease of transition to discharge.',
           });
-        } else if (contraindNSAID) {
-          const contraindReasons = comorbidities.filter((c) =>
-            ['Active PUD/GI bleed', 'CKD stage 5/dialysis', 'Thrombocytopenia', 'On anticoagulation'].includes(c)
-          ).join(', ');
-          recs.nonOpioidBackbone.push({
-            priority: 'red',
-            text: `NSAIDs contraindicated: ${contraindReasons}`,
-            why: `Patient has contraindication(s). Avoid NSAIDs due to risk of GI bleeding (PUD/bleed), renal deterioration (CKD 5), bleeding (thrombocytopenia, anticoagulation).`,
+        }
+        if (!hasKetamineInfusion && !hasKetaminePO && (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No')) && !toleratingPO) {
+          output.actionItems.push({
+            text: `Start ketamine infusion 0.1-0.3 mg/kg/hr (sub-anesthetic)${weight ? ` → ${Math.round(parseFloat(weight) * 0.1)}-${Math.round(parseFloat(weight) * 0.3)} mg/hr` : ''}`,
+            tag: 'KETAMINE',
+            sub: 'Not tolerating PO; IV ketamine appropriate. Transition to PO when able. Caution: uncontrolled HTN, psychosis, elevated ICP.',
           });
         }
 
-        const hasGabapentinoid = Object.keys(nonOpioids).some((k) => ['Gabapentin', 'Pregabalin'].includes(k));
-        if (!hasGabapentinoid && (painMechanism.includes('Neuropathic') || ['Post-op general', 'Post-op spine', 'Post-op thoracic'].includes(primaryCondition))) {
-          const doseNote = comorbidities.some((c) => c.includes('CKD')) ? ' (adjust for renal)' : '';
-          recs.nonOpioidBackbone.push({
-            priority: 'green',
-            text: `Gabapentin 300 mg TID or Pregabalin 75 mg BID${doseNote}`,
-            why: 'Pain mechanism includes neuropathic component or post-surgical context. Gabapentinoids provide adjuvant analgesia and are opioid-sparing. Adjust doses in renal impairment.',
-          });
-        }
-
-        // Suzetrigine recommendation
+        // Suzetrigine
         if (!nonOpioids['Suzetrigine'] && controlStatus === 'No' && (contraindNSAID || medd > 90 || toleranceStatus === 'tolerant')) {
-          recs.nonOpioidBackbone.push({
-            priority: 'green',
-            text: 'Consider Suzetrigine 100mg PO TID (Journavx)',
-            why: 'Pain uncontrolled AND patient has NSAID contraindication OR MEDD>90 OR opioid-tolerant. Suzetrigine is a selective Nav1.7 sodium channel inhibitor, non-opioid mechanism, FDA-approved for moderate-to-severe acute pain. Does not cause respiratory depression or interact with opioids.',
-          });
+          output.suggestions.push({ text: `Consider suzetrigine (Journavx) 100mg PO TID — selective Nav1.7 inhibitor, no respiratory depression, no opioid interaction`, tag: 'NOVEL' });
         }
 
-        // ===== OPIOID MANAGEMENT =====
-        if (toleranceStatus === 'naive' && controlStatus === 'No' && opioids.length === 0) {
-          recs.opioidManagement.push({
-            priority: 'green',
-            text: 'Initiate opioid titration: conservative starting doses with 15-30 min IV reassessment or 1-2 hour PO reassessment.',
-            why: 'Opioid-naive patients require careful titration to target analgesia while monitoring for adverse effects (respiratory depression, nausea, somnolence).',
-          });
-        } else if (toleranceStatus === 'tolerant' && controlStatus === 'No') {
-          const homeNote = homeOME ? `(home baseline: ${homeOME} mg OME)` : '(unspecified)';
-          recs.opioidManagement.push({
-            priority: 'yellow',
-            text: `Opioid-tolerant patient: ensure home baseline equivalent is met ${homeNote}. Consider opioid rotation or escalation.`,
-            why: `Patient is opioid-tolerant. Verify home regimen is continued to prevent withdrawal. If inadequate control despite home dose + acute additions, consider rotation or further escalation.`,
-          });
+        // Regional
+        if (['Post-op ortho', 'Post-op thoracic', 'Post-op general', 'Post-op abdominal', 'Post-op vascular', 'Post-op spine', 'Trauma/fracture'].includes(primaryCondition) || consultTypes.includes('Post-surgical')) {
+          const contraindBlock = comorbidities.includes('Thrombocytopenia') || comorbidities.includes('On anticoagulation');
+          if (!hasBlock && !contraindBlock) {
+            output.actionItems.push({ text: `Evaluate for regional analgesia (peripheral nerve block ± catheter, or epidural if appropriate)`, tag: 'REGIONAL', sub: 'Regional reduces opioid requirement 30-50%. Review anatomy and anticoagulation status.' });
+          } else if (contraindBlock) {
+            output.suggestions.push({ text: `Regional may be contraindicated (anticoagulation/thrombocytopenia). Review timing of last anticoagulant dose per ASRA guidelines.`, tag: 'REGIONAL' });
+          }
         }
 
-        if (medd > 90) {
-          recs.opioidManagement.push({
-            priority: 'red',
-            text: `HIGH MEDD (${medd} mg OME): maximize multimodal, consider rotation, add ketamine, enhanced monitoring.`,
-            why: `MEDD >90 mg OME associated with increased overdose risk, respiratory depression, and adverse effects. Prioritize non-opioid adjuvants and regional analgesia before further escalation.`,
-          });
+        // Lidocaine infusion
+        if ((hasNeuropathic || painMechanism.includes('Mixed')) && !infusions['Lidocaine IV infusion'] && !hasBlock) {
+          output.suggestions.push({ text: `Consider IV lidocaine infusion 1-1.5 mg/kg/hr${weight ? ` (${Math.round(parseFloat(weight) * 1)}-${Math.round(parseFloat(weight) * 1.5)} mg/hr)` : ''} for neuropathic component`, tag: 'ADJUVANT' });
         }
 
-        // Flag meperidine
-        if (opioids.some((o) => o.drug === 'Meperidine PO' || o.drug === 'Meperidine IV')) {
-          recs.opioidManagement.push({
-            priority: 'red',
-            text: 'Meperidine: generally avoid. Seizure risk, normeperidine accumulation, especially >48 hours.',
-            why: 'Beers criteria recommends avoiding meperidine due to neurotoxic metabolite (normeperidine). Poor choice for acute pain. Use alternative opioid.',
-          });
+        // Dexmedetomidine
+        if ((comorbidities.includes('Active delirium') || sedationStatus === 'Somnolent') && medd > 30) {
+          output.suggestions.push({ text: `Consider dexmedetomidine infusion (ICU) for opioid-sparing analgesia — reduces delirium risk vs continued opioid escalation`, tag: 'ADJUVANT' });
         }
 
-        // ===== MOUD-SPECIFIC =====
-        Object.keys(moud).forEach((moudType) => {
-          if (moud[moudType].active) {
-            const dose = moud[moudType].dose;
-            const doseText = dose ? ` at ${dose} mg/day` : '';
+        // === MOUD-SPECIFIC ===
+        activeMOUDs.forEach(moudType => {
+          const dose = moud[moudType]?.dose;
+          const doseText = dose ? ` ${dose}mg/day` : '';
 
-            if (moudType === 'Buprenorphine') {
-              recs.moudSpecific.push({
-                priority: 'yellow',
-                text: `Continue buprenorphine${doseText} (DO NOT discontinue). Consider split dosing (TID–QID) for improved analgesia.`,
-                why: `Patient on buprenorphine. Partial mu-receptor agonist provides lower analgesic ceiling. Continue baseline dose to prevent withdrawal. Full agonist opioids may require higher doses due to partial occupancy. Splitting dose over day improves coverage.`,
-              });
-              recs.moudSpecific.push({
-                priority: 'green',
-                text: 'Coordinate with addiction medicine. Consider ketamine infusion for adjuvant analgesia.',
-                why: 'Specialist co-management improves pain control and recovery outcomes. Ketamine provides NMDA antagonism without relying on mu-receptor activity.',
-              });
-            } else if (moudType === 'Suboxone') {
-              recs.moudSpecific.push({
-                priority: 'yellow',
-                text: `Continue buprenorphine/naloxone (Suboxone)${doseText} (DO NOT discontinue). Consider split dosing (TID–QID).`,
-                why: `Patient on Suboxone (buprenorphine/naloxone combination). The naloxone component is minimally bioavailable sublingually and acts as abuse deterrent. Clinical implications same as buprenorphine alone. Continue to prevent withdrawal; split dosing for better analgesia.`,
-              });
-            } else if (moudType === 'Methadone') {
-              recs.moudSpecific.push({
-                priority: 'green',
-                text: `Continue methadone${doseText} (verify with OTP/pharmacy). This provides baseline opioid maintenance but is NOT analgesic dosing; supplement with multimodal and additional opioids.`,
-                why: `Patient on methadone maintenance${doseText}. Maintenance dose provides only baseline opioid effect, not analgesia for acute pain. Requires supplemental opioids, NSAIDs, and adjuvants. May need to coordinate with OTP for dose timing.`,
-              });
-              recs.moudSpecific.push({
-                priority: 'yellow',
-                text: 'Monitor QTc interval, especially with QT-prolonging agents. Avoid opioid rotation TO methadone without specialist input.',
-                why: 'Methadone prolongs QTc; risk of torsades de pointes with other QT-prolonging drugs (macrolides, antipsychotics, some antiemetics). Complex pharmacokinetics and pharmacogenetics require specialist guidance.',
-              });
-            } else if (moudType === 'Naltrexone') {
-              const route = moud[moudType].route || 'oral';
-              if (route === 'oral') {
-                recs.moudSpecific.push({
-                  priority: 'red',
-                  text: 'Naltrexone 50mg PO daily blocks opioid receptors. Discontinue; opioid analgesia effective ~72 hours after last dose.',
-                  why: `Naltrexone is a pure opioid antagonist. Blocks mu-receptors; full agonist opioids ineffective while on therapy. Washout ~72 hours after discontinuation. Plan pain management without opioids (regional, multimodal) during naltrexone period.`,
-                });
-              } else {
-                recs.moudSpecific.push({
-                  priority: 'red',
-                  text: 'Naltrexone (Vivitrol) 380mg IM provides ~30-day opioid receptor blockade. Opioids will be INEFFECTIVE.',
-                  why: `Injectable naltrexone provides 30-day antagonism. Opioid analgesia completely blocked during this period. Requires aggressive multimodal: NSAIDs, gabapentinoids, ketamine, regional analgesia.`,
-                });
-              }
-              recs.moudSpecific.push({
-                priority: 'yellow',
-                text: 'Maximize multimodal: NSAIDs, gabapentinoids, ketamine infusion, regional blocks. Urgent addiction medicine consult.',
-                why: 'Non-opioid approaches essential during naltrexone blockade. Specialist should coordinate pain and addiction management.',
-              });
-            }
+          if (moudType === 'Buprenorphine' || moudType === 'Suboxone') {
+            output.safetyAlerts.push({ text: `On ${moudType}${doseText} — DO NOT discontinue. Continue current dose, consider split dosing TID-QID for improved analgesia. Full agonist opioids may require higher doses due to partial receptor occupancy.`, tag: 'MOUD' });
+            output.actionItems.push({ text: `Coordinate with addiction medicine. Add ketamine PO/infusion for NMDA-mediated adjuvant analgesia (not dependent on mu-receptor).`, tag: 'MOUD' });
+          } else if (moudType === 'Methadone') {
+            output.actionItems.push({ text: `Continue maintenance methadone${doseText} (verify with OTP). This is NOT analgesic dosing — supplement with multimodal + additional opioid for acute pain.`, tag: 'MOUD', sub: 'Monitor QTc. Avoid opioid rotation TO methadone without specialist input.' });
+          } else if (moudType === 'Naltrexone') {
+            // Already handled in safety alerts above
+            output.actionItems.push({ text: `Maximize non-opioid multimodal: NSAIDs, gabapentinoids, ketamine, regional blocks. URGENT addiction medicine consult.`, tag: 'MOUD' });
           }
         });
 
-        // OUD history (without current MOUD)
-        if (hasOUD && Object.keys(moud).filter(k => moud[k].active).length === 0) {
-          recs.moudSpecific.push({
-            priority: 'yellow',
-            text: 'History of OUD noted. Use opioids judiciously with close monitoring. Consider addiction medicine co-management.',
-            why: 'Patient with OUD history (in recovery). Higher relapse risk if opioids used. Favor scheduled multimodal regimen over PRN opioid-heavy approaches. Implement monitoring for aberrant use patterns.',
-          });
+        // OUD without MOUD
+        if (hasOUD && activeMOUDs.length === 0) {
+          output.suggestions.push({ text: `H/o OUD, no current MOUD. Use opioids judiciously with close monitoring. Favor scheduled over PRN. Consider addiction medicine co-management. Screen for relapse risk.`, tag: 'OUD' });
         }
 
-        // ===== ADJUVANT THERAPIES =====
-        if (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No')) {
-          recs.adjuvant.push({
-            priority: 'yellow',
-            text: 'Ketamine infusion: 0.1–0.3 mg/kg/hr (sub-anesthetic). Consider if opioid-tolerant + inadequate control or OIH suspected.',
-            why: `MEDD ${medd} or tolerant patient with inadequate control. Ketamine is NMDA antagonist; reduces opioid requirement and prevents opioid-induced hyperalgesia (OIH). Dose based on weight. Caution with uncontrolled HTN, psychosis, elevated ICP.`,
-          });
-        }
-
-        // Ketamine PO recommendation
-        const hasKetaminePO = nonOpioids['Ketamine PO'] || opioids.some(o => o.drug === 'Ketamine PO');
-        if (!hasKetaminePO && (medd > 90 || (toleranceStatus === 'tolerant' && controlStatus === 'No'))) {
-          recs.adjuvant.push({
-            priority: 'green',
-            text: 'Consider Ketamine PO 25-50mg TID',
-            why: `MEDD >90 or opioid-tolerant with inadequate control. Ketamine PO is non-opioid adjuvant with NMDA antagonism. Can be added to multimodal regimen. Monitor for dissociative effects.`,
-          });
-        }
-
-        if ((painMechanism.includes('Neuropathic') || painMechanism === 'Mixed') && !infusions['Lidocaine IV infusion']) {
-          recs.adjuvant.push({
-            priority: 'green',
-            text: 'Lidocaine IV infusion: 1–2 mg/kg bolus over 30 min, then 0.5–2 mg/min. Especially for post-op neuropathic pain.',
-            why: 'Pain has neuropathic component. Lidocaine is local anesthetic adjuvant; reduces hyperalgesia and allodynia. Opioid-sparing. No respiratory depression.',
-          });
-        }
-
-        if (comorbidities.includes('Active delirium') || sedationStatus === 'Somnolent') {
-          recs.adjuvant.push({
-            priority: 'yellow',
-            text: 'Consider dexmedetomidine infusion (ICU setting) for opioid-sparing analgesia with reduced delirium risk.',
-            why: 'Patient has active delirium or somnolence. Alpha-2 agonist (dexmedetomidine) provides analgesia and anxiolysis without respiratory depression. Preferable to opioids in this context.',
-          });
-        }
-
-        // ===== REGIONAL ANALGESIA =====
-        if (['Post-op ortho', 'Post-op thoracic', 'Post-op general', 'Trauma/fracture'].includes(primaryCondition) || consultTypes.includes('Post-surgical')) {
-          const hasBlock = infusions['Epidural'] || infusions['Peripheral nerve block (single shot)'] || infusions['Continuous nerve block catheter'];
-          const contraindBlock = comorbidities.includes('Thrombocytopenia') || comorbidities.includes('On anticoagulation');
-
-          if (!hasBlock && !contraindBlock) {
-            recs.regional.push({
-              priority: 'green',
-              text: 'Regional analgesia: consider peripheral nerve block (single-shot or continuous catheter) or epidural if not contraindicated.',
-              why: 'Post-surgical or traumatic pain. Regional techniques provide superior analgesia with opioid requirement reduced by 30-50%. Improves mobility and recovery.',
-            });
-          }
-        }
-
-        // ===== MONITORING & SAFETY =====
+        // === MONITORING ===
         if (medd > 90) {
-          recs.monitoring.push({
-            priority: 'red',
-            text: 'Naloxone at bedside. Continuous pulse oximetry. Respiratory monitoring (rate and effort).',
-            why: 'High-dose opioids (>90 mg OME daily) carry increased risk of respiratory depression and overdose. Continuous monitoring with immediate reversal agent available.',
-          });
+          output.actionItems.push({ text: `Naloxone 0.4mg at bedside. Continuous SpO₂. Respiratory assessments Q1-2H.`, tag: 'SAFETY' });
+        }
+        if ((hasOSA || hasCOPD) && medd > 45) {
+          output.actionItems.push({ text: `Continuous pulse oximetry (${hasOSA ? 'OSA' : ''}${hasOSA && hasCOPD ? '+' : ''}${hasCOPD ? 'COPD' : ''} + opioids). Consider capnography if available.`, tag: 'SAFETY' });
+        }
+        if (opioids.length > 0 && !nonOpioids['Senna'] && !nonOpioids['Docusate']) {
+          output.actionItems.push({ text: `Bowel regimen: senna 8.6mg + docusate 100mg BID. Reassess Q48H.`, tag: 'PROPHYLAXIS' });
+        }
+        if (isElderly && (opioids.length > 0 || hasGabapentinoid)) {
+          output.suggestions.push({ text: `Fall precautions (age ≥65 + CNS-active medications). Evaluate for polypharmacy.`, tag: 'GERI' });
         }
 
-        if ((comorbidities.includes('OSA') || comorbidities.includes('COPD')) && medd > 45) {
-          recs.monitoring.push({
-            priority: 'yellow',
-            text: 'Continuous pulse oximetry and capnography if available. Monitor for hypercarbia.',
-            why: `Patient has respiratory comorbidity (OSA or COPD) and MEDD >45 mg. Opioids risk respiratory depression and CO2 retention. Enhanced monitoring required.`,
-          });
-        }
-
-        if (opioids.length > 0) {
-          recs.monitoring.push({
-            priority: 'green',
-            text: 'Bowel regimen: senna + docusate or PEG. Reassess q48–72h.',
-            why: 'Opioid-induced constipation occurs in ~80% of patients on opioids. Prophylactic bowel regimen required. Avoid naloxegol/methylnaltrexone unless refractory.',
-          });
-        }
-
-        if (comorbidities.includes('Age ≥65') && (opioids.length > 0 || Object.keys(nonOpioids).length > 0)) {
-          recs.monitoring.push({
-            priority: 'yellow',
-            text: 'Fall precautions: evaluate for polypharmacy, sedation, orthostatic risk.',
-            why: 'Beers criteria: older adults at high risk for falls with CNS-active drugs (opioids, sedatives, anticonvulsants). Implement fall precautions, mobility assessment.',
-          });
-        }
-
-        // ===== PCA RECOMMENDATIONS =====
-        if (pca.active) {
-          if (toleratingPO) {
-            recs.disposition.push({
-              priority: 'green',
-              text: 'Patient on PCA and tolerating PO: transition to scheduled PO + PRN breakthrough dosing.',
-              why: `PCA provides flexibility but limits mobility and recovery. With PO tolerance, transition to stable oral regimen (e.g., ${Math.round(medd / 4)}-${Math.round(medd / 3)} mg Q4-6H scheduled) with PRN breakthrough options.`,
-            });
-          } else {
-            const estimatedDemandDose = parseFloat(pca.demandDose) || 0;
-            const lockout = parseFloat(pca.lockout) || 6;
-            const basalRate = parseFloat(pca.basalRate) || 0;
-            const estimatedDailyDemand = (estimatedDemandDose * (60 / lockout) * 24 * 0.3);
-            const totalEstimated = estimatedDailyDemand + (basalRate * 24);
-
-            if (estimatedDailyDemand > (totalEstimated * 0.7)) {
-              recs.disposition.push({
-                priority: 'yellow',
-                text: 'High PCA demand use detected. Consider increasing basal rate or adding adjuvants to reduce frequency of demands.',
-                why: `Estimated daily demand dose: ${Math.round(estimatedDailyDemand)} mg. Frequent demands indicate inadequate baseline analgesia. Increase scheduled component or add multimodal adjuvants.`,
-              });
-            }
+        // === DISCHARGE PLAN ===
+        if (toleratingPO && controlStatus !== 'No') {
+          if (ivAnalgesicOpioids.length > 0) {
+            output.dischargePlan.push(`Transition IV→PO (see conversion above). Target stable PO regimen ×24h before discharge.`);
+          }
+          if (pca.active) {
+            output.dischargePlan.push(`Wean PCA: convert to equivalent scheduled PO + PRN. Target PCA-free ×12-24h before discharge.`);
+          }
+          if (infusions['Ketamine infusion']) {
+            output.dischargePlan.push(`Transition ketamine infusion → PO ketamine 10-50mg Q6H before discharge.`);
+          }
+          if (infusions['Lidocaine IV infusion']) {
+            output.dischargePlan.push(`D/C lidocaine infusion. Consider lidocaine patch 5% or PO gabapentinoid for continued neuropathic coverage.`);
           }
         }
 
-        // ===== DISPOSITION =====
-        if (controlStatus === 'Yes' && painAtRest <= 4) {
-          recs.disposition.push({
-            priority: 'green',
-            text: 'Pain well-controlled. Plan transition to PO if tolerating, wean infusions, consider opioid de-escalation protocol.',
-            why: 'Pain control achieved. Simplify regimen and transition toward discharge. Implement opioid-sparing multimodal maintenance.',
+        if (toleranceStatus === 'tolerant' && homeOMENum > 0) {
+          output.dischargePlan.push(`Resume home opioid regimen (${homeOMENum} OME). Provide PRN breakthrough for acute component with defined taper plan.`);
+        } else if (toleranceStatus === 'naive' && medd > 0) {
+          output.dischargePlan.push(`Opioid-naive: limit discharge prescription to ≤3-5 day supply. Include opioid-sparing multimodal regimen. Set expectations for taper.`);
+        }
+
+        if (medd > 90 || toleranceStatus === 'tolerant') {
+          output.dischargePlan.push(`Prescribe naloxone (Narcan) for home. Educate patient/family on signs of overdose.`);
+        }
+
+        if (hasOUD || activeMOUDs.length > 0) {
+          output.dischargePlan.push(`Ensure MOUD follow-up arranged prior to discharge. Coordinate with addiction medicine for transition plan.`);
+        }
+
+        // Methadone rotation warning
+        if (opioids.some(o => o.drug === 'Methadone PO' || o.drug === 'Methadone IV')) {
+          output.conversionMath.push({
+            label: 'Methadone conversion (non-linear)',
+            math: `Methadone uses dose-dependent ratios:\nOME ≤60 → 4:1 (morphine:methadone)\nOME 61-160 → 8:1\nOME 161-400 → 10:1\nOME >400 → 12:1\n⚠ Methadone has long/variable t½ (15-60h). Titrate slowly. Specialist input recommended.`,
           });
-        } else if (controlStatus === 'Partial') {
-          recs.disposition.push({
-            priority: 'yellow',
-            text: 'Partial control: continue current regimen with reassessment in 4–6 hours. Adjust doses or add adjuvants.',
-            why: 'Pain partially controlled. Further optimization before major escalation. Consider increasing breakthrough dosing frequency or adding adjuvants.',
+        }
+
+        return output;
+      }, [consultTypes, primaryCondition, postOpDay, painAtRest, painWithActivity, painQuality, controlStatus, painPattern, toleranceStatus, homeOME, hasOUD, moud, comorbidities, sedationStatus, toleratingPO, medd, opioids, nonOpioids, infusions, pca, weight]);
+
+      // === COPY AS CONSULT NOTE ===
+      const copyConsultNote = () => {
+        const r = generateRecommendations;
+        let note = `ACUTE PAIN SERVICE — CLINICAL DECISION SUPPORT\n`;
+        note += `${'='.repeat(50)}\n\n`;
+        note += `ASSESSMENT: ${r.oneLiner}\n`;
+        note += `Multimodal: ${r.multimodalClasses.length > 0 ? r.multimodalClasses.join(', ') : 'None'} (${r.multimodalCount}/7 classes)\n`;
+        if (r.delta !== null) note += `Home OME delta: ${r.delta > 0 ? '+' : ''}${r.delta} mg\n`;
+        note += `\n`;
+
+        if (r.safetyAlerts.length > 0) {
+          note += `⚠ SAFETY ALERTS:\n`;
+          r.safetyAlerts.forEach(a => { note += `  [${a.tag}] ${a.text}\n`; });
+          note += `\n`;
+        }
+
+        if (r.actionItems.length > 0) {
+          note += `RECOMMENDATIONS:\n`;
+          r.actionItems.forEach((a, i) => {
+            note += `  ${i + 1}. [${a.tag}] ${a.text}\n`;
+            if (a.sub) note += `     → ${a.sub}\n`;
           });
-        } else if (controlStatus === 'No') {
-          recs.disposition.push({
-            priority: 'red',
-            text: 'Inadequate control: escalate opioid doses, add adjuvants, consider rotation or regional analgesia.',
-            why: 'Uncontrolled pain requires urgent intervention. Assess for causes (inadequate dosing, rapid metabolism, pain mechanism mismatch). Multimodal approach more effective than opioid-only escalation.',
-          });
+          note += `\n`;
         }
 
-        return recs;
-      }, [
-        consultTypes,
-        primaryCondition,
-        postOpDay,
-        painAtRest,
-        painWithActivity,
-        painQuality,
-        controlStatus,
-        painPattern,
-        toleranceStatus,
-        homeOME,
-        hasOUD,
-        moud,
-        comorbidities,
-        sedationStatus,
-        toleratingPO,
-        medd,
-        opioids,
-        nonOpioids,
-        infusions,
-        pca,
-      ]);
-
-      // Copy recommendations to clipboard
-      const copyRecommendations = () => {
-        let text = 'ACUTE PAIN SERVICE CLINICAL DECISION SUPPORT\n\n';
-        text += 'ASSESSMENT:\n' + generateRecommendations.assessment + '\n\n';
-
-        if (generateRecommendations.dosingSuggestions.length > 0) {
-          text += 'DOSING RECOMMENDATIONS:\n' + generateRecommendations.dosingSuggestions.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        if (r.suggestions.length > 0) {
+          note += `CONSIDER:\n`;
+          r.suggestions.forEach(s => { note += `  • [${s.tag}] ${s.text}\n`; });
+          note += `\n`;
         }
 
-        if (generateRecommendations.nonOpioidBackbone.length > 0) {
-          text += 'NON-OPIOID BACKBONE:\n' + generateRecommendations.nonOpioidBackbone.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        if (r.conversionMath.length > 0) {
+          note += `CONVERSION MATH:\n`;
+          r.conversionMath.forEach(c => { note += `  ${c.label}: ${c.math}\n`; });
+          note += `\n`;
         }
 
-        if (generateRecommendations.opioidManagement.length > 0) {
-          text += 'OPIOID MANAGEMENT:\n' + generateRecommendations.opioidManagement.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
+        if (r.dischargePlan.length > 0) {
+          note += `DISCHARGE PLANNING:\n`;
+          r.dischargePlan.forEach(d => { note += `  • ${d}\n`; });
+          note += `\n`;
         }
 
-        if (generateRecommendations.moudSpecific.length > 0) {
-          text += 'MOUD-SPECIFIC:\n' + generateRecommendations.moudSpecific.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
-        }
-
-        if (generateRecommendations.adjuvant.length > 0) {
-          text += 'ADJUVANT THERAPIES:\n' + generateRecommendations.adjuvant.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
-        }
-
-        if (generateRecommendations.regional.length > 0) {
-          text += 'REGIONAL ANALGESIA:\n' + generateRecommendations.regional.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
-        }
-
-        if (generateRecommendations.monitoring.length > 0) {
-          text += 'MONITORING & SAFETY:\n' + generateRecommendations.monitoring.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
-        }
-
-        if (generateRecommendations.disposition.length > 0) {
-          text += 'DISPOSITION:\n' + generateRecommendations.disposition.map((r) => `• ${r.text}\n  Why: ${r.why}`).join('\n\n') + '\n\n';
-        }
-
-        text += '---\nEducational Tool — Verify all recommendations with clinical judgment and institutional protocols.';
-        navigator.clipboard.writeText(text);
+        note += `---\nEducational tool. Verify all recommendations with clinical judgment and institutional protocols.\n`;
+        navigator.clipboard.writeText(note);
+        setCopiedNote(true);
+        setTimeout(() => setCopiedNote(false), 2000);
       };
 
-      // Recommendation Item Component
-      const RecommendationItem = ({ rec }) => {
-        const [expanded, setExpanded] = React.useState(false);
-        const priorityColor = {
-          red: 'border-l-4 border-red-600 bg-red-50',
-          yellow: 'border-l-4 border-yellow-600 bg-yellow-50',
-          green: 'border-l-4 border-green-600 bg-green-50',
-        };
-        const iconColor = {
-          red: 'text-red-600',
-          yellow: 'text-yellow-600',
-          green: 'text-green-600',
-        };
+      // ========== UI COMPONENTS ==========
 
-        return (
-          <div className={`p-3 rounded mb-2 ${priorityColor[rec.priority]}`}>
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="w-full flex items-start justify-between text-left"
-            >
-              <div className="flex-1">
-                <div className="flex items-start gap-2">
-                  {rec.priority === 'red' && <AlertCircle size={18} className={`${iconColor[rec.priority]} flex-shrink-0`} />}
-                  {rec.priority === 'yellow' && <AlertTriangle size={18} className={`${iconColor[rec.priority]} flex-shrink-0`} />}
-                  {rec.priority === 'green' && <CheckCircle size={18} className={`${iconColor[rec.priority]} flex-shrink-0`} />}
-                  <p className="text-sm font-semibold text-slate-800">{rec.text}</p>
-                </div>
-              </div>
-              {expanded ? <ChevronUp size={18} className="flex-shrink-0" /> : <ChevronDown size={18} className="flex-shrink-0" />}
-            </button>
-            {expanded && <p className="text-xs text-slate-600 mt-2 ml-6">{rec.why}</p>}
-          </div>
-        );
-      };
-
-      // Pain Score Selector
       const PainScoreRow = ({ value, onChange }) => (
         <div className="flex gap-1 flex-wrap">
           {Array.from({ length: 11 }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => onChange(i)}
-              className={`w-8 h-8 rounded text-sm font-semibold transition ${
-                value === i
-                  ? 'bg-red-600 text-white'
-                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-              }`}
-            >
-              {i}
-            </button>
+            <button key={i} onClick={() => onChange(i)}
+              className={`w-8 h-8 rounded text-sm font-bold transition ${value === i ? (i <= 3 ? 'bg-green-600 text-white' : i <= 6 ? 'bg-yellow-500 text-white' : 'bg-red-600 text-white') : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+            >{i}</button>
           ))}
         </div>
       );
 
-      // Opioid Button Grid Section
       const OpioidButtonGrid = ({ opioids: opioidList, title }) => (
-        <div className="mb-6">
-          <h3 className="font-semibold text-slate-700 mb-3">{title}</h3>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="mb-4">
+          <h3 className="font-semibold text-slate-700 mb-2 text-sm">{title}</h3>
+          <div className="grid grid-cols-2 gap-1.5">
             {opioidList.map((drugObj) => (
               <div key={drugObj.name}>
                 <button
                   onClick={() => {
-                    if (selectedOpioidButton === drugObj.name) {
-                      setSelectedOpioidButton(null);
-                    } else {
+                    if (selectedOpioidButton === drugObj.name) { setSelectedOpioidButton(null); }
+                    else {
                       setSelectedOpioidButton(drugObj.name);
                       setOpioidFormUnit(drugObj.unit);
-                      setOpioidFormFreq(drugObj.name.includes('IV') ? 'Q4H PRN' : 'Q4H');
+                      setOpioidFormFreq(drugObj.name === 'Fentanyl Patch' ? 'Q72H' : drugObj.name.includes('IV') ? 'Q4H PRN' : 'Q4H');
                     }
                   }}
-                  className={`w-full h-12 p-2 rounded text-sm font-semibold transition flex items-center justify-center ${
-                    selectedOpioidButton === drugObj.name
-                      ? 'bg-blue-600 text-white border-2 border-blue-800'
-                      : 'bg-slate-100 text-slate-800 border-2 border-slate-300 hover:bg-slate-200'
-                  }`}
-                >
-                  {drugObj.name}
-                </button>
-
+                  className={`w-full h-10 px-2 rounded text-xs font-semibold transition flex items-center justify-center ${selectedOpioidButton === drugObj.name ? 'bg-blue-600 text-white ring-2 ring-blue-800' : 'bg-slate-100 text-slate-800 ring-1 ring-slate-300 hover:bg-slate-200'}`}
+                >{drugObj.name}</button>
                 {selectedOpioidButton === drugObj.name && (
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-300 rounded">
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-xs font-semibold text-slate-700">Dose ({drugObj.unit})</label>
-                        <input
-                          type="number"
-                          value={opioidFormDose}
-                          onChange={(e) => setOpioidFormDose(e.target.value)}
-                          placeholder=""
-                          className="w-full border border-blue-300 rounded px-2 py-1 text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-700">Frequency</label>
-                        <select
-                          value={opioidFormFreq}
-                          onChange={(e) => setOpioidFormFreq(e.target.value)}
-                          className="w-full border border-blue-300 rounded px-2 py-1 text-sm"
-                        >
-                          {frequencyOptions.map((f) => (
-                            <option key={f} value={f}>
-                              {f}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <button
-                        onClick={() => addOpioidFromButton(drugObj)}
-                        className="w-full bg-blue-600 text-white py-1 rounded text-sm font-semibold hover:bg-blue-700"
-                      >
-                        Add
-                      </button>
+                  <div className="mt-1 p-2 bg-blue-50 border border-blue-300 rounded space-y-1.5">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600">Dose ({drugObj.unit})</label>
+                      <input type="number" value={opioidFormDose} onChange={(e) => setOpioidFormDose(e.target.value)} className="w-full border border-blue-300 rounded px-2 py-1 text-sm" autoFocus />
                     </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600">Frequency</label>
+                      <select value={opioidFormFreq} onChange={(e) => setOpioidFormFreq(e.target.value)} className="w-full border border-blue-300 rounded px-2 py-1 text-sm">
+                        {frequencyOptions.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={() => addOpioidFromButton(drugObj)} className="w-full bg-blue-600 text-white py-1 rounded text-xs font-bold hover:bg-blue-700">Add</button>
                   </div>
                 )}
               </div>
@@ -968,337 +793,213 @@
         </div>
       );
 
-      // INPUT TAB CONTENT
+      // === INPUT TAB ===
       const InputTab = () => (
         <div className="space-y-0">
-          {/* CONTEXT SECTION */}
+          {/* CONTEXT */}
           <div className="border-b">
-            <button
-              onClick={() => toggleInputSection('context')}
-              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
-            >
-              <h3 className="font-semibold text-slate-800">Context</h3>
-              {expandedInputSections.context ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            <button onClick={() => toggleInputSection('context')} className="w-full px-4 py-2.5 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition">
+              <h3 className="font-semibold text-slate-800 text-sm">Context</h3>
+              {expandedInputSections.context ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
-
             {expandedInputSections.context && (
-              <div className="px-4 py-4 space-y-4">
+              <div className="px-4 py-3 space-y-3">
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Reason for Consult (select all that apply)</label>
-                  <div className="space-y-2">
-                    {['Post-surgical', 'Medical acute', 'Acute-on-chronic', 'Opioid management', 'Complex/refractory'].map((type) => (
-                      <label key={type} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={consultTypes.includes(type)}
-                          onChange={() => toggleConsultType(type)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm">{type}</span>
-                      </label>
+                  <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Reason for Consult</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['Post-surgical', 'Medical acute', 'Acute-on-chronic', 'Opioid management', 'Complex/refractory'].map(type => (
+                      <button key={type} onClick={() => toggleConsultType(type)}
+                        className={`px-2.5 py-1.5 rounded text-xs font-semibold transition ${consultTypes.includes(type) ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                      >{type}</button>
                     ))}
                   </div>
                 </div>
-
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Primary Condition</label>
-                  <select
-                    value={primaryCondition}
-                    onChange={(e) => setPrimaryCondition(e.target.value)}
-                    className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                  >
+                  <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Primary Condition</label>
+                  <select value={primaryCondition} onChange={(e) => setPrimaryCondition(e.target.value)} className="w-full border border-slate-300 rounded px-3 py-1.5 text-sm">
                     <option value="">Select...</option>
-                    {[
-                      'Sickle cell',
-                      'Pancreatitis',
-                      'Trauma/fracture',
-                      'Cancer pain',
-                      'Post-op general',
-                      'Post-op ortho',
-                      'Post-op spine',
-                      'Post-op thoracic',
-                      'Post-op abdominal',
-                      'Burns',
-                      'Other',
-                    ].map((cond) => (
-                      <option key={cond} value={cond}>
-                        {cond}
-                      </option>
-                    ))}
+                    {['Sickle cell', 'Pancreatitis', 'Trauma/fracture', 'Cancer pain', 'Post-op general', 'Post-op ortho', 'Post-op spine', 'Post-op thoracic', 'Post-op abdominal', 'Post-op vascular', 'Burns', 'Other'].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Post-Op / Hospital Day</label>
-                  <input
-                    type="number"
-                    value={postOpDay}
-                    onChange={(e) => setPostOpDay(e.target.value)}
-                    className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                    placeholder="e.g., 1, 5"
-                  />
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">POD / Hospital Day</label>
+                    <input type="number" value={postOpDay} onChange={(e) => setPostOpDay(e.target.value)} className="w-full border border-slate-300 rounded px-3 py-1.5 text-sm" placeholder="e.g., 1" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Tolerating PO?</label>
+                    <div className="flex gap-3 pt-1">
+                      {[true, false].map(v => (
+                        <label key={String(v)} className="flex items-center">
+                          <input type="radio" name="po" checked={toleratingPO === v} onChange={() => setToleratingPO(v)} className="mr-1.5" />
+                          <span className="text-sm">{v ? 'Yes' : 'No'}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* PAIN SECTION */}
+          {/* PAIN */}
           <div className="border-b">
-            <button
-              onClick={() => toggleInputSection('pain')}
-              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
-            >
-              <h3 className="font-semibold text-slate-800">Pain Assessment</h3>
-              {expandedInputSections.pain ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            <button onClick={() => toggleInputSection('pain')} className="w-full px-4 py-2.5 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition">
+              <h3 className="font-semibold text-slate-800 text-sm">Pain Assessment</h3>
+              {expandedInputSections.pain ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
-
             {expandedInputSections.pain && (
-              <div className="px-4 py-4 space-y-4">
+              <div className="px-4 py-3 space-y-3">
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain at Rest (0–10)</label>
+                  <label className="text-xs font-semibold text-slate-700 mb-1.5 block">NRS at Rest</label>
                   <PainScoreRow value={painAtRest} onChange={setPainAtRest} />
                 </div>
-
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain with Activity (0–10)</label>
+                  <label className="text-xs font-semibold text-slate-700 mb-1.5 block">NRS with Activity</label>
                   <PainScoreRow value={painWithActivity} onChange={setPainWithActivity} />
                 </div>
-
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain Quality (select all that apply)</label>
-                  <div className="space-y-2">
-                    {qualityOptions.map((q) => (
-                      <label key={q} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={painQuality.includes(q)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setPainQuality([...painQuality, q]);
-                            } else {
-                              setPainQuality(painQuality.filter((pq) => pq !== q));
-                            }
-                          }}
-                          className="mr-3"
-                        />
-                        <span className="text-sm">{q}</span>
-                      </label>
+                  <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Pain Quality</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {qualityOptions.map(q => (
+                      <button key={q} onClick={() => painQuality.includes(q) ? setPainQuality(painQuality.filter(pq => pq !== q)) : setPainQuality([...painQuality, q])}
+                        className={`px-2.5 py-1.5 rounded text-xs font-semibold transition ${painQuality.includes(q) ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                      >{q}</button>
                     ))}
                   </div>
                 </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Control Status</label>
-                  <div className="space-y-2">
-                    {['Yes', 'Partial', 'No'].map((status) => (
-                      <label key={status} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="control"
-                          value={status}
-                          checked={controlStatus === status}
-                          onChange={(e) => setControlStatus(e.target.value)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm">{status}</span>
-                      </label>
-                    ))}
+                <div className="flex gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Controlled?</label>
+                    <div className="flex gap-2">
+                      {['Yes', 'Partial', 'No'].map(s => (
+                        <button key={s} onClick={() => setControlStatus(s)}
+                          className={`px-3 py-1.5 rounded text-xs font-semibold transition ${controlStatus === s ? (s === 'Yes' ? 'bg-green-600 text-white' : s === 'Partial' ? 'bg-yellow-500 text-white' : 'bg-red-600 text-white') : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                        >{s}</button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Pain Pattern</label>
-                  <div className="space-y-2">
-                    {['Constant', 'Intermittent', 'Movement-related'].map((pattern) => (
-                      <label key={pattern} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="pattern"
-                          value={pattern}
-                          checked={painPattern === pattern}
-                          onChange={(e) => setPainPattern(e.target.value)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm">{pattern}</span>
-                      </label>
-                    ))}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Pattern</label>
+                    <div className="flex gap-2">
+                      {['Constant', 'Intermittent', 'Movement'].map(p => (
+                        <button key={p} onClick={() => setPainPattern(p)}
+                          className={`px-3 py-1.5 rounded text-xs font-semibold transition ${painPattern === p ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                        >{p}</button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* MEDICATIONS SECTION */}
+          {/* MEDICATIONS */}
           <div className="border-b">
-            <button
-              onClick={() => toggleInputSection('meds')}
-              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
-            >
-              <h3 className="font-semibold text-slate-800">Current Medications</h3>
-              {expandedInputSections.meds ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            <button onClick={() => toggleInputSection('meds')} className="w-full px-4 py-2.5 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition">
+              <h3 className="font-semibold text-slate-800 text-sm">Current Medications</h3>
+              {expandedInputSections.meds ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
-
             {expandedInputSections.meds && (
-              <div className="px-4 py-4 space-y-6">
+              <div className="px-4 py-3 space-y-4">
                 {/* MEDD Badge */}
                 {medd > 0 && (
-                  <div className={`p-3 rounded-lg font-semibold text-white text-center text-lg ${
-                    medd > 90 ? 'bg-red-600' : medd > 50 ? 'bg-orange-600' : 'bg-blue-600'
-                  }`}>
-                    MEDD: {medd} mg OME
+                  <button onClick={() => setShowMEDDBreakdown(!showMEDDBreakdown)}
+                    className={`w-full p-2.5 rounded-lg font-bold text-white text-center text-base ${medd > 120 ? 'bg-red-700' : medd > 90 ? 'bg-red-600' : medd > 50 ? 'bg-orange-600' : 'bg-blue-600'}`}>
+                    MEDD: {medd} mg OME {generateRecommendations.delta !== null && <span className="text-sm font-normal opacity-90">({generateRecommendations.delta > 0 ? '+' : ''}{generateRecommendations.delta} from home)</span>}
+                    <span className="text-xs block opacity-75 mt-0.5">(tap for breakdown)</span>
+                  </button>
+                )}
+
+                {/* MEDD Breakdown */}
+                {showMEDDBreakdown && medd > 0 && (
+                  <div className="math-block text-xs space-y-1">
+                    {meddResult.breakdown.map((b, i) => (
+                      <div key={i}>{b.drug}: {b.dose}{b.drug.includes('Fentanyl') ? 'mcg' : 'mg'} {b.freq} × {b.factor} = {b.ome} OME{b.note ? ` (${b.note})` : ''}</div>
+                    ))}
+                    {meddResult.pcaDetail && (
+                      <div>PCA {meddResult.pcaDetail.drug}: {meddResult.pcaDetail.note} × {meddResult.pcaDetail.factor} = {meddResult.pcaDetail.ome} OME</div>
+                    )}
+                    <div className="font-bold border-t border-slate-300 pt-1">Total: {medd} OME/day</div>
                   </div>
                 )}
 
                 {/* Active Medications List */}
                 {opioids.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Active Opioids</h4>
-                    <div className="space-y-2">
+                    <p className="section-label">Active Opioids</p>
+                    <div className="space-y-1">
                       {opioids.map((med, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between bg-slate-100 p-2 rounded text-sm"
-                        >
-                          <div>
-                            <div className="font-semibold text-slate-800">{med.drug}</div>
-                            <div className="text-xs text-slate-600">
-                              {med.dose}{med.unit} {med.frequency}
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => removeOpioid(idx)}
-                            className="text-red-600 hover:text-red-800 p-1"
-                          >
-                            <X size={18} />
-                          </button>
+                        <div key={idx} className="flex items-center justify-between bg-slate-100 px-2 py-1.5 rounded text-xs">
+                          <span><span className="font-semibold">{med.drug}</span> {med.dose}{med.unit} {med.frequency}</span>
+                          <button onClick={() => removeOpioid(idx)} className="text-red-500 hover:text-red-700 p-0.5"><X size={14} /></button>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* IV Opioids Grid */}
                 <OpioidButtonGrid opioids={ivOpioids} title="IV Opioids" />
 
-                {/* PCA SECTION */}
-                <div className="border-t pt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-slate-700">PCA (Patient-Controlled Analgesia)</h4>
-                    <button
-                      onClick={() => setPCA({ ...pca, active: !pca.active })}
-                      className={`px-3 py-1 rounded text-sm font-semibold transition ${
-                        pca.active
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
-                      }`}
-                    >
-                      {pca.active ? 'Active' : 'Inactive'}
-                    </button>
+                {/* PCA */}
+                <div className="border-t pt-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-slate-700 text-sm">PCA</h4>
+                    <button onClick={() => setPCA({ ...pca, active: !pca.active })}
+                      className={`px-3 py-1 rounded text-xs font-bold transition ${pca.active ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                    >{pca.active ? 'Active' : 'Inactive'}</button>
                   </div>
-
                   {pca.active && (
-                    <div className="bg-purple-50 border border-purple-300 rounded p-4 space-y-3">
+                    <div className="bg-purple-50 border border-purple-200 rounded p-3 space-y-2">
                       <div>
-                        <label className="text-xs font-semibold text-slate-700 block mb-1">Drug</label>
-                        <div className="space-y-1">
-                          {['Hydromorphone', 'Morphine', 'Fentanyl'].map((drug) => (
-                            <label key={drug} className="flex items-center">
-                              <input
-                                type="radio"
-                                name="pcaDrug"
-                                value={drug}
-                                checked={pca.drug === drug}
-                                onChange={(e) => setPCA({ ...pca, drug: e.target.value })}
-                                className="mr-2"
-                              />
-                              <span className="text-sm">{drug}</span>
-                            </label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">Drug</label>
+                        <div className="flex gap-3">
+                          {['Hydromorphone', 'Morphine', 'Fentanyl'].map(drug => (
+                            <label key={drug} className="flex items-center"><input type="radio" name="pcaDrug" value={drug} checked={pca.drug === drug} onChange={(e) => setPCA({ ...pca, drug: e.target.value })} className="mr-1" /><span className="text-xs">{drug}</span></label>
                           ))}
                         </div>
                       </div>
-
-                      <div>
-                        <label className="text-xs font-semibold text-slate-700 block mb-1">
-                          Demand Dose ({pca.drug === 'Fentanyl' ? 'mcg' : 'mg'})
-                        </label>
-                        <input
-                          type="number"
-                          value={pca.demandDose}
-                          onChange={(e) => setPCA({ ...pca, demandDose: e.target.value })}
-                          placeholder="e.g., 0.2"
-                          className="w-full border border-purple-300 rounded px-2 py-1 text-sm"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-semibold text-slate-700 block mb-1">Lockout Interval (minutes)</label>
-                        <input
-                          type="number"
-                          value={pca.lockout}
-                          onChange={(e) => setPCA({ ...pca, lockout: e.target.value })}
-                          placeholder="e.g., 6"
-                          className="w-full border border-purple-300 rounded px-2 py-1 text-sm"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-semibold text-slate-700 block mb-1">
-                          Basal Rate ({pca.drug === 'Fentanyl' ? 'mcg/hr' : 'mg/hr'})
-                        </label>
-                        <input
-                          type="number"
-                          value={pca.basalRate}
-                          onChange={(e) => setPCA({ ...pca, basalRate: e.target.value })}
-                          placeholder="e.g., 0 (optional)"
-                          className="w-full border border-purple-300 rounded px-2 py-1 text-sm"
-                        />
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 block">Demand ({pca.drug === 'Fentanyl' ? 'mcg' : 'mg'})</label>
+                          <input type="number" value={pca.demandDose} onChange={(e) => setPCA({ ...pca, demandDose: e.target.value })} placeholder="0.2" className="w-full border border-purple-200 rounded px-2 py-1 text-sm" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 block">Lockout (min)</label>
+                          <input type="number" value={pca.lockout} onChange={(e) => setPCA({ ...pca, lockout: e.target.value })} placeholder="6" className="w-full border border-purple-200 rounded px-2 py-1 text-sm" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 block">Basal ({pca.drug === 'Fentanyl' ? 'mcg' : 'mg'}/hr)</label>
+                          <input type="number" value={pca.basalRate} onChange={(e) => setPCA({ ...pca, basalRate: e.target.value })} placeholder="0" className="w-full border border-purple-200 rounded px-2 py-1 text-sm" />
+                        </div>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* PO Opioids Grid */}
                 <OpioidButtonGrid opioids={poOpioids} title="PO Opioids" />
-
-                {/* Other Route Opioids */}
                 <OpioidButtonGrid opioids={otherRouteOpioids} title="Other Routes" />
 
-                {/* Non-Opioid Analgesics */}
-                <div className="pt-4 border-t">
-                  <h4 className="font-semibold text-slate-700 mb-3">Non-Opioid Analgesics</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {nonOpioidDrugs.map((drug) => (
-                      <button
-                        key={drug.name}
-                        onClick={() => toggleNonOpioid(drug.name)}
-                        className={`px-3 py-2 rounded text-sm font-semibold transition ${
-                          nonOpioids[drug.name]
-                            ? 'bg-green-600 text-white'
-                            : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
-                        }`}
-                      >
-                        {drug.name}
-                      </button>
+                {/* Non-Opioids */}
+                <div className="pt-3 border-t">
+                  <p className="section-label">Non-Opioid Analgesics</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {nonOpioidDrugs.map(drug => (
+                      <button key={drug.name} onClick={() => toggleNonOpioid(drug.name)}
+                        className={`px-2.5 py-1.5 rounded text-xs font-semibold transition ${nonOpioids[drug.name] ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                      >{drug.name}</button>
                     ))}
                   </div>
                 </div>
 
-                {/* Infusions / Interventional */}
-                <div className="pt-4 border-t">
-                  <h4 className="font-semibold text-slate-700 mb-3">Infusions / Interventional</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {infusionDrugs.map((inf) => (
-                      <button
-                        key={inf}
-                        onClick={() => toggleInfusion(inf)}
-                        className={`px-3 py-2 rounded text-sm font-semibold transition ${
-                          infusions[inf]
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
-                        }`}
-                      >
-                        {inf}
-                      </button>
+                {/* Infusions */}
+                <div className="pt-3 border-t">
+                  <p className="section-label">Infusions / Interventional</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {infusionDrugs.map(inf => (
+                      <button key={inf} onClick={() => toggleInfusion(inf)}
+                        className={`px-2.5 py-1.5 rounded text-xs font-semibold transition ${infusions[inf] ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                      >{inf}</button>
                     ))}
                   </div>
                 </div>
@@ -1306,211 +1007,100 @@
             )}
           </div>
 
-          {/* PATIENT FACTORS SECTION */}
+          {/* PATIENT FACTORS */}
           <div className="border-b">
-            <button
-              onClick={() => toggleInputSection('factors')}
-              className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition"
-            >
-              <h3 className="font-semibold text-slate-800">Patient Factors</h3>
-              {expandedInputSections.factors ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            <button onClick={() => toggleInputSection('factors')} className="w-full px-4 py-2.5 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition">
+              <h3 className="font-semibold text-slate-800 text-sm">Patient Factors</h3>
+              {expandedInputSections.factors ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
-
             {expandedInputSections.factors && (
-              <div className="px-4 py-4 space-y-4">
-                {/* SECTION A: Tolerance Status */}
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Tolerance Status</label>
-                  <div className="space-y-2">
-                    {['naive', 'tolerant'].map((status) => (
-                      <label key={status} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="toleranceStatus"
-                          value={status}
-                          checked={toleranceStatus === status}
-                          onChange={(e) => setToleranceStatus(e.target.value)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm">{status === 'naive' ? 'Opioid naive' : 'Opioid tolerant'}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {toleranceStatus === 'tolerant' && (
+              <div className="px-4 py-3 space-y-3">
+                <div className="flex gap-4">
                   <div>
-                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Home OME (mg/day)</label>
-                    <input
-                      type="number"
-                      value={homeOME}
-                      onChange={(e) => setHomeOME(e.target.value)}
-                      className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                      placeholder="e.g., 60"
-                    />
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Tolerance</label>
+                    <div className="flex gap-2">
+                      {['naive', 'tolerant'].map(s => (
+                        <button key={s} onClick={() => setToleranceStatus(s)}
+                          className={`px-3 py-1.5 rounded text-xs font-semibold transition ${toleranceStatus === s ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                        >{s === 'naive' ? 'Naive' : 'Tolerant'}</button>
+                      ))}
+                    </div>
                   </div>
-                )}
-
-                {/* SECTION B: History of OUD */}
-                <div className="pt-4 border-t">
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">OUD History</label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={hasOUD}
-                      onChange={(e) => setHasOUD(e.target.checked)}
-                      className="mr-3"
-                    />
-                    <span className="text-sm">History of Opioid Use Disorder</span>
-                  </label>
+                  {toleranceStatus === 'tolerant' && (
+                    <div className="flex-1">
+                      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Home OME (mg/day)</label>
+                      <input type="number" value={homeOME} onChange={(e) => setHomeOME(e.target.value)} className="w-full border border-slate-300 rounded px-3 py-1.5 text-sm" placeholder="e.g., 60" />
+                    </div>
+                  )}
                 </div>
 
-                {/* SECTION C: MOUD */}
-                <div className="pt-4 border-t">
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">MOUD (Medications for OUD)</label>
-                  <div className="space-y-3">
-                    {['Methadone', 'Buprenorphine', 'Suboxone', 'Naltrexone'].map((moudName) => (
-                      <div key={moudName}>
-                        <label className="flex items-center mb-1">
-                          <input
-                            type="checkbox"
-                            checked={!!moud[moudName]?.active}
-                            onChange={() => toggleMOUD(moudName)}
-                            className="mr-2"
-                          />
-                          <span className="text-sm font-semibold">{moudName}</span>
-                        </label>
+                <div className="flex gap-4 items-start">
+                  <div>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" checked={hasOUD} onChange={(e) => setHasOUD(e.target.checked)} />
+                      <span className="text-xs font-semibold text-slate-700">H/o OUD</span>
+                    </label>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">MOUD</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Methadone', 'Buprenorphine', 'Suboxone', 'Naltrexone'].map(m => (
+                        <button key={m} onClick={() => toggleMOUD(m)}
+                          className={`px-2.5 py-1 rounded text-xs font-semibold transition ${moud[m]?.active ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                        >{m}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
-                        {moud[moudName]?.active && (
-                          <div className="ml-5 space-y-2 bg-slate-50 p-2 rounded">
-                            {moudName === 'Naltrexone' ? (
-                              <div>
-                                <label className="text-xs font-semibold text-slate-700 block mb-1">Route</label>
-                                <div className="space-y-1">
-                                  {['oral', 'injectable'].map((route) => (
-                                    <label key={route} className="flex items-center">
-                                      <input
-                                        type="radio"
-                                        name={`naltrexone_route`}
-                                        value={route}
-                                        checked={(moud[moudName]?.route || 'oral') === route}
-                                        onChange={(e) => setMoud({ ...moud, [moudName]: { ...moud[moudName], route: e.target.value } })}
-                                        className="mr-2"
-                                      />
-                                      <span className="text-xs">{route === 'oral' ? 'Oral 50mg daily' : 'Injectable (Vivitrol) 380mg monthly'}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <div>
-                                <label className="text-xs font-semibold text-slate-700 block mb-1">Dose (mg/day)</label>
-                                <input
-                                  type="number"
-                                  value={moud[moudName]?.dose || ''}
-                                  onChange={(e) => setMoud({ ...moud, [moudName]: { ...moud[moudName], dose: e.target.value } })}
-                                  className="w-full border border-slate-300 rounded px-2 py-1 text-sm"
-                                  placeholder="e.g., 80"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
+                {/* MOUD dose inputs */}
+                {Object.keys(moud).filter(k => moud[k]?.active).map(moudName => (
+                  <div key={moudName} className="ml-4 bg-amber-50 p-2 rounded border border-amber-200">
+                    {moudName === 'Naltrexone' ? (
+                      <div className="flex gap-3">
+                        <span className="text-xs font-semibold">{moudName}:</span>
+                        {['oral', 'injectable'].map(route => (
+                          <label key={route} className="flex items-center"><input type="radio" name="naltrexone_route" value={route} checked={(moud[moudName]?.route || 'oral') === route} onChange={(e) => setMoud({ ...moud, [moudName]: { ...moud[moudName], route: e.target.value } })} className="mr-1" /><span className="text-xs">{route === 'oral' ? 'PO 50mg daily' : 'IM (Vivitrol) monthly'}</span></label>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold">{moudName} dose:</span>
+                        <input type="number" value={moud[moudName]?.dose || ''} onChange={(e) => setMoud({ ...moud, [moudName]: { ...moud[moudName], dose: e.target.value } })} className="w-20 border border-amber-300 rounded px-2 py-0.5 text-xs" placeholder="mg/day" />
+                        <span className="text-xs text-slate-500">mg/day</span>
+                      </div>
+                    )}
                   </div>
-                </div>
+                ))}
 
                 {/* Comorbidities */}
-                <div className="pt-4 border-t">
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Comorbidities</label>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    {[
-                      'Age ≥65',
-                      'AKI',
-                      'CKD stage 3-4',
-                      'CKD stage 5/dialysis',
-                      'Hepatic mild-mod',
-                      'Severe/cirrhosis',
-                      'OSA',
-                      'COPD',
-                      'CAD/recent MI',
-                      'Heart failure',
-                      'Active PUD/GI bleed',
-                      'Thrombocytopenia',
-                      'On anticoagulation',
-                      'Active delirium',
-                      'Dementia',
-                      'Seizure disorder',
-                    ].map((comorbid) => (
-                      <label key={comorbid} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={comorbidities.includes(comorbid)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setComorbidities([...comorbidities, comorbid]);
-                            } else {
-                              setComorbidities(comorbidities.filter((c) => c !== comorbid));
-                            }
-                          }}
-                          className="mr-2"
-                        />
-                        <span>{comorbid}</span>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Comorbidities</label>
+                  <div className="grid grid-cols-2 gap-1 text-xs">
+                    {['Age ≥65', 'AKI', 'CKD stage 3-4', 'CKD stage 5/dialysis', 'Hepatic impairment (mild-moderate)', 'Hepatic impairment (severe/cirrhosis)', 'OSA', 'COPD', 'CAD/recent MI', 'Heart failure', 'Active PUD/GI bleed', 'Thrombocytopenia', 'On anticoagulation', 'Active delirium', 'Dementia', 'Seizure disorder'].map(c => (
+                      <label key={c} className="flex items-center py-0.5">
+                        <input type="checkbox" checked={comorbidities.includes(c)} onChange={(e) => e.target.checked ? setComorbidities([...comorbidities, c]) : setComorbidities(comorbidities.filter(x => x !== c))} className="mr-1.5" />
+                        <span>{c}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                {/* Sedation Status */}
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Sedation Status</label>
-                  <div className="space-y-2">
-                    {['Alert', 'Drowsy', 'Somnolent'].map((status) => (
-                      <label key={status} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="sedation"
-                          value={status}
-                          checked={sedationStatus === status}
-                          onChange={(e) => setSedationStatus(e.target.value)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm">{status}</span>
-                      </label>
-                    ))}
+                <div className="flex gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Sedation</label>
+                    <div className="flex gap-2">
+                      {['Alert', 'Drowsy', 'Somnolent'].map(s => (
+                        <button key={s} onClick={() => setSedationStatus(s)}
+                          className={`px-2.5 py-1 rounded text-xs font-semibold transition ${sedationStatus === s ? (s === 'Alert' ? 'bg-green-600 text-white' : s === 'Drowsy' ? 'bg-yellow-500 text-white' : 'bg-red-600 text-white') : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                        >{s}</button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                {/* Tolerating PO */}
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Tolerating PO?</label>
-                  <div className="flex gap-4">
-                    {[true, false].map((value) => (
-                      <label key={String(value)} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="po"
-                          checked={toleratingPO === value}
-                          onChange={() => setToleatingPO(value)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm">{value ? 'Yes' : 'No'}</span>
-                      </label>
-                    ))}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Weight (kg)</label>
+                    <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} className="w-20 border border-slate-300 rounded px-2 py-1 text-sm" placeholder="kg" />
                   </div>
-                </div>
-
-                {/* Weight */}
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">Weight (kg) - for ketamine dosing</label>
-                  <input
-                    type="number"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                    placeholder="Optional"
-                  />
                 </div>
               </div>
             )}
@@ -1518,202 +1108,169 @@
         </div>
       );
 
-      // RECOMMENDATIONS TAB CONTENT
-      const RecommendationsTab = () => (
-        <div className="space-y-4 pb-6">
-          {/* Assessment Summary */}
-          <div className="bg-slate-100 p-4 rounded">
-            <p className="text-sm font-semibold text-slate-700 mb-2">Assessment</p>
-            <p className="text-sm text-slate-800">{generateRecommendations.assessment}</p>
+      // === RECOMMENDATIONS TAB ===
+      const RecommendationsTab = () => {
+        const r = generateRecommendations;
+        const totalRecs = r.safetyAlerts.length + r.actionItems.length + r.suggestions.length;
+        return (
+          <div className="space-y-4 pb-6">
+            {/* One-liner */}
+            <div className="bg-slate-800 text-white p-3 rounded-lg">
+              <p className="text-sm leading-relaxed">{r.oneLiner}</p>
+              <div className="flex gap-2 mt-2 flex-wrap">
+                <span className={`badge ${r.multimodalCount >= 4 ? 'bg-green-700' : r.multimodalCount >= 2 ? 'bg-yellow-600' : 'bg-red-600'}`}>
+                  {r.multimodalCount}/7 multimodal
+                </span>
+                {r.delta !== null && (
+                  <span className={`badge ${r.delta > 0 ? 'bg-blue-600' : r.delta < 0 ? 'bg-red-600' : 'bg-slate-500'}`}>
+                    {r.delta > 0 ? '+' : ''}{r.delta} from home
+                  </span>
+                )}
+                {r.multimodalClasses.length > 0 && (
+                  <span className="badge bg-slate-600">{r.multimodalClasses.join(' · ')}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Safety Alerts */}
+            {r.safetyAlerts.length > 0 && (
+              <div>
+                <p className="section-label text-red-700">Safety Alerts ({r.safetyAlerts.length})</p>
+                {r.safetyAlerts.map((a, i) => (
+                  <div key={i} className="rec-card bg-red-50 border-l-4 border-red-600 p-2.5 rounded-r mb-1.5">
+                    <div className="flex items-start gap-2">
+                      <span className="badge bg-red-600 text-white flex-shrink-0 mt-0.5">{a.tag}</span>
+                      <p className="text-xs text-red-900 leading-relaxed">{a.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Action Items */}
+            {r.actionItems.length > 0 && (
+              <div>
+                <p className="section-label">Recommendations ({r.actionItems.length})</p>
+                {r.actionItems.map((a, i) => (
+                  <div key={i} className="rec-card bg-white border-l-4 border-blue-500 p-2.5 rounded-r mb-1.5 shadow-sm">
+                    <div className="flex items-start gap-2">
+                      <span className="badge bg-blue-100 text-blue-700 flex-shrink-0 mt-0.5">{a.tag}</span>
+                      <div>
+                        <p className="text-xs text-slate-900 font-semibold leading-relaxed">{a.text}</p>
+                        {a.sub && <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{a.sub}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Suggestions */}
+            {r.suggestions.length > 0 && (
+              <div>
+                <p className="section-label">Consider ({r.suggestions.length})</p>
+                {r.suggestions.map((s, i) => (
+                  <div key={i} className="rec-card bg-green-50 border-l-4 border-green-500 p-2.5 rounded-r mb-1.5">
+                    <div className="flex items-start gap-2">
+                      <span className="badge bg-green-100 text-green-700 flex-shrink-0 mt-0.5">{s.tag}</span>
+                      <p className="text-xs text-green-900 leading-relaxed">{s.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Conversion Math */}
+            {r.conversionMath.length > 0 && (
+              <div>
+                <p className="section-label">Show Your Work</p>
+                {r.conversionMath.map((c, i) => (
+                  <div key={i} className="mb-2">
+                    <p className="text-xs font-semibold text-slate-700">{c.label}</p>
+                    <div className="math-block">{c.math}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Discharge Plan */}
+            {r.dischargePlan.length > 0 && (
+              <div>
+                <p className="section-label text-indigo-700">Discharge Planning</p>
+                <div className="bg-indigo-50 border border-indigo-200 rounded p-3 space-y-1.5">
+                  {r.dischargePlan.map((d, i) => (
+                    <p key={i} className="text-xs text-indigo-900 leading-relaxed">• {d}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Copy Button */}
+            <button onClick={copyConsultNote}
+              className={`w-full py-2.5 rounded font-semibold flex items-center justify-center gap-2 text-sm transition ${copiedNote ? 'bg-green-600 text-white' : 'bg-slate-800 text-white hover:bg-slate-700'}`}>
+              <Copy size={16} /> {copiedNote ? 'Copied to clipboard' : 'Copy as Consult Note'}
+            </button>
           </div>
+        );
+      };
 
-          {/* Dosing Suggestions */}
-          {generateRecommendations.dosingSuggestions.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                Dosing Recommendations ({generateRecommendations.dosingSuggestions.length})
-              </h3>
-              {generateRecommendations.dosingSuggestions.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* Non-Opioid Backbone */}
-          {generateRecommendations.nonOpioidBackbone.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                Non-Opioid Backbone ({generateRecommendations.nonOpioidBackbone.length})
-              </h3>
-              {generateRecommendations.nonOpioidBackbone.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* Opioid Management */}
-          {generateRecommendations.opioidManagement.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                Opioid Management ({generateRecommendations.opioidManagement.length})
-              </h3>
-              {generateRecommendations.opioidManagement.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* MOUD-Specific */}
-          {generateRecommendations.moudSpecific.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                MOUD-Specific ({generateRecommendations.moudSpecific.length})
-              </h3>
-              {generateRecommendations.moudSpecific.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* Adjuvant Therapies */}
-          {generateRecommendations.adjuvant.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                Adjuvant Therapies ({generateRecommendations.adjuvant.length})
-              </h3>
-              {generateRecommendations.adjuvant.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* Regional Analgesia */}
-          {generateRecommendations.regional.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                Regional Analgesia ({generateRecommendations.regional.length})
-              </h3>
-              {generateRecommendations.regional.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* Monitoring & Safety */}
-          {generateRecommendations.monitoring.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                Monitoring & Safety ({generateRecommendations.monitoring.length})
-              </h3>
-              {generateRecommendations.monitoring.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* Disposition */}
-          {generateRecommendations.disposition.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">
-                Disposition ({generateRecommendations.disposition.length})
-              </h3>
-              {generateRecommendations.disposition.map((rec, idx) => (
-                <RecommendationItem key={idx} rec={rec} />
-              ))}
-            </div>
-          )}
-
-          {/* Copy Button */}
-          <button
-            onClick={copyRecommendations}
-            className="w-full bg-blue-600 text-white py-3 rounded font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 mt-4"
-          >
-            <Copy size={18} /> Copy All Recommendations
-          </button>
-        </div>
-      );
-
-      // Responsive Layout
-      const isWideScreen = typeof window !== 'undefined' && window.innerWidth >= 1024;
-      const [screenWidth, setScreenWidth] = React.useState(
-        typeof window !== 'undefined' ? window.innerWidth : 1024
-      );
-
+      // === LAYOUT ===
+      const [screenWidth, setScreenWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
       React.useEffect(() => {
         const handleResize = () => setScreenWidth(window.innerWidth);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
       }, []);
-
       const wide = screenWidth >= 1024;
+      const totalRecs = generateRecommendations.safetyAlerts.length + generateRecommendations.actionItems.length + generateRecommendations.suggestions.length;
 
       return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-          {/* Top Banner */}
-          <div className="bg-red-700 text-white text-xs text-center py-2 font-semibold">
-            Educational Tool — Verify all recommendations with clinical judgment and institutional protocols.
+        <div className="min-h-screen bg-slate-100">
+          <div className="bg-red-700 text-white text-xs text-center py-1.5 font-semibold no-print">
+            Educational Tool — Verify with clinical judgment and institutional protocols
+          </div>
+          <div className="bg-slate-800 text-white px-4 py-3 flex items-center justify-between no-print">
+            <div>
+              <h1 className="text-lg font-bold">APS Decision Support</h1>
+              <p className="text-xs text-slate-400">Acute Pain Service</p>
+            </div>
+            <button onClick={resetAll} className="bg-slate-600 hover:bg-slate-500 text-white text-xs font-semibold px-3 py-1.5 rounded transition">Reset</button>
           </div>
 
-          {/* Header */}
-          <div className="bg-slate-800 text-white p-4 shadow-lg">
-            <h1 className="text-2xl font-bold">Acute Pain Service DSS</h1>
-            <p className="text-xs text-slate-300">Clinical Decision Support for Resident Physicians</p>
-          </div>
-
-          {/* MEDD Badge */}
           {medd > 0 && (
-            <div className={`mx-4 mt-4 p-4 rounded-lg font-bold text-white text-center text-lg ${
-              medd > 90 ? 'bg-red-600' : medd > 50 ? 'bg-orange-600' : 'bg-blue-600'
-            }`}>
-              MEDD: {medd} mg OME {homeOME && toleranceStatus === 'tolerant' && `(Home: ${homeOME}, Delta: ${medd - parseInt(homeOME)})`}
+            <div className={`mx-4 mt-3 p-2.5 rounded-lg font-bold text-white text-center ${medd > 120 ? 'bg-red-700' : medd > 90 ? 'bg-red-600' : medd > 50 ? 'bg-orange-600' : 'bg-blue-600'} no-print`}>
+              MEDD: {medd} mg OME
+              {generateRecommendations.delta !== null && <span className="text-sm font-normal ml-2">({generateRecommendations.delta > 0 ? '+' : ''}{generateRecommendations.delta} vs home)</span>}
+              {generateRecommendations.safetyAlerts.length > 0 && <span className="ml-2 text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded-full">{generateRecommendations.safetyAlerts.length} alert{generateRecommendations.safetyAlerts.length > 1 ? 's' : ''}</span>}
             </div>
           )}
 
-          {/* Main Content */}
-          <div className="p-4 max-w-7xl mx-auto">
+          <div className="p-3 max-w-7xl mx-auto">
             {wide ? (
-              // SIDE-BY-SIDE LAYOUT
-              <div className="grid grid-cols-2 gap-4 min-h-screen">
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <InputTab />
-                </div>
-                <div className="bg-white rounded-lg shadow-lg p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 250px)' }}>
-                  <RecommendationsTab />
-                </div>
+              <div className="grid grid-cols-2 gap-3" style={{ minHeight: 'calc(100vh - 160px)' }}>
+                <div className="bg-white rounded-lg shadow overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}><InputTab /></div>
+                <div className="bg-white rounded-lg shadow p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}><RecommendationsTab /></div>
               </div>
             ) : (
-              // MOBILE TABBED LAYOUT
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-20">
-                {/* Tab Content */}
-                <div className="p-6">
-                  {activeTab === 'input' ? <InputTab /> : <RecommendationsTab />}
-                </div>
+              <div className="bg-white rounded-lg shadow overflow-hidden mb-20">
+                <div className={activeTab === 'input' ? 'block' : 'hidden'}><InputTab /></div>
+                <div className={activeTab === 'recs' ? 'block p-4' : 'hidden'}><RecommendationsTab /></div>
               </div>
             )}
           </div>
 
-          {/* Mobile Tab Navigation */}
           {!wide && (
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-300 shadow-lg flex gap-0">
-              <button
-                onClick={() => setActiveTab('input')}
-                className={`flex-1 py-4 text-sm font-semibold transition ${
-                  activeTab === 'input'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
-                }`}
-              >
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg flex no-print">
+              <button onClick={() => setActiveTab('input')}
+                className={`flex-1 py-3 text-sm font-semibold transition ${activeTab === 'input' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
                 Input
               </button>
-              <button
-                onClick={() => setActiveTab('recs')}
-                className={`flex-1 py-4 text-sm font-semibold transition ${
-                  activeTab === 'recs'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
-                }`}
-              >
-                Recommendations
+              <button onClick={() => setActiveTab('recs')}
+                className={`flex-1 py-3 text-sm font-semibold transition relative ${activeTab === 'recs' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                Recs
+                {totalRecs > 0 && (
+                  <span className={`absolute top-1.5 right-4 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center ${generateRecommendations.safetyAlerts.length > 0 ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>{totalRecs}</span>
+                )}
               </button>
             </div>
           )}
